@@ -24,6 +24,7 @@ M107004,Houston Firehall_60                          ,PM25      ,PM25      ,PM25
 ```
 
 This script cleans them up by:
+
 -Reformatting dates to ISO8061 standard (`YYYY-MM-DD HH:MM:SS`)
 -Removing extra white space
 -Removing trailing commas
