@@ -1,12 +1,10 @@
 
 <div id="devex-badge"><a rel="Delivery" href="https://github.com/BCDevExchange/docs/blob/master/discussion/projectstates.md"><img alt="In production, but maybe in Alpha or Beta. Intended to persist and be supported." style="border-width:0" src="https://assets.bcdevexchange.org/images/badges/delivery.svg" title="In production, but maybe in Alpha or Beta. Intended to persist and be supported." /></a></div>
 
-------------------------------------------------------------------------------
-
 # Clean Hourly Air Quality Data
 
-Process hourly air quality data exported from Envista to format for DataBC record: 
-https://catalogue.data.gov.bc.ca/dataset/air-quality-monitoring-verified-hourly-data-and-station-data
+Process hourly air quality data exported from Envista to format for B.C. Data Catalogue record. 
+
 
 The raw data files look like this:
 
@@ -42,7 +40,7 @@ There are two files: `cleanair.R` and `cleanair.sh`:
   Get help on how to use it by running `Rscript cleanair.R --help`.
 - `cleanair.sh` is a short shell script that runs `cleanair.R` on each of the raw data files.
 
-## Running the script:
+### Running the script:
 
 - It is advised to copy all of the raw data files as well as the two `cleanair.*` script files to a directory on your `C:/` drive - it is very slow running on a network drive.
 - Make sure that `cleanair.sh`, `cleanair.R`, and the raw data files are all in the same directory.
@@ -50,7 +48,7 @@ There are two files: `cleanair.R` and `cleanair.sh`:
 - The `cleanir.sh` script has a section to test it, and a section to run it on the full files. It is recommended to test it first as the real operation takes a while.
 - Run `cleanair.sh` from the terminal window with: `sh cleanair.sh`
 
-### License
+## License
 
     Copyright 2016 Province of British Columbia
 
