@@ -1,7 +1,6 @@
+## DEPRECATED: This repository is retired and no longer being maintained.
 
-<div id="devex-badge"><a rel="Delivery" href="https://github.com/BCDevExchange/docs/blob/master/discussion/projectstates.md"><img alt="In production, but maybe in Alpha or Beta. Intended to persist and be supported." style="border-width:0" src="https://assets.bcdevexchange.org/images/badges/delivery.svg" title="In production, but maybe in Alpha or Beta. Intended to persist and be supported." /></a></div>
-
-# Clean Hourly Air Quality Data
+## Clean Hourly Air Quality Data
 
 Process hourly air quality data exported from Envista to format for B.C. Data Catalogue record. 
 
@@ -63,3 +62,6 @@ There are two files: `cleanair.R` and `cleanair.sh`:
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+    
+
+This repository is maintained by [Environmental Reporting BC](http://www2.gov.bc.ca/gov/content?id=FF80E0B985F245CEA62808414D78C41B). Click [here](https://github.com/bcgov/EnvReportBC-RepoList) for a complete list of our repositories on GitHub.
