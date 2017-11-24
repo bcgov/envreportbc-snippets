@@ -1,9 +1,10 @@
-## DEPRECATED: This repository is retired and no longer being maintained.
+<div id="devex-badge"><a rel="Retired" href="https://github.com/BCDevExchange/assets/blob/master/README.md"><img alt="No longer being used or supported, recommend not using an alternative option." style="border-width:0" src="https://assets.bcdevexchange.org/images/badges/retired.svg" title="No longer being used or supported, recommend not using an alternative option." /></a></div>
 
 ## Clean Hourly Air Quality Data
 
 Process hourly air quality data exported from Envista to format for B.C. Data Catalogue record. 
 
+**PLEASE NOTE**: This repository is **RETIRED** and no longer being maintained.
 
 The raw data files look like this:
 
