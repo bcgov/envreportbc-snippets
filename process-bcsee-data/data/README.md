@@ -5,5 +5,5 @@ The script for adding the annual snapshot of BCSEE data to the [historical data 
 - `RecentYear_Plants_Animals.xlsx`
 - `RecentYear_Communities.xlsx` 
 
-These files will (likely) have a year starting each filename in the source directory, but should be copied into the `data/` folder with this name. Alterniatively, you can edit the `read_csv` lines to import with a different filename.
+These files will (likely) have a year starting each filename in the source directory, but should be copied into the `data/` folder with the above name. Alternatively, you can edit the `bcsee.R lines 56-57` to import files with different file names.
 
