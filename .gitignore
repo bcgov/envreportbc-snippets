@@ -5,3 +5,4 @@
 *html
 .DS_Store
 process-air-data.Rproj
+*process-bcsee-data/out
