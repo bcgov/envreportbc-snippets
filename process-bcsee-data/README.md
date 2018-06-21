@@ -17,16 +17,21 @@ See the License for the specific language governing permissions and limitations 
 
 ## Process Historical BC Species and Ecosystems Conservation Status Information
 
-Process annual snapshot .xlsx files of BC Species and Ecosystems Conservation Status Information exported from Biotics:
-
-- format annual snapshot .xlsx files for the B.C. Data Catalogue 
-- append the annual snapshot .xlsx files to the historical [dataset for publishing in the B.C. Data Catalogue](https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84)
-
-
 This script supports the historical BC Species and Ecosystems Conservation Status Information dataset available in the [B.C. Data Catalogue](https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84) under the [Open Government Licence - British Columbia](https://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61). 
 
+### Usage
+
+Process annual snapshot .xlsx files of BC Species and Ecosystems Conservation Status Information exported from Biotics:
+
+- import the [historical BC Species and Ecosystems Conservation Status Information dataset ](https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84)
+- import & format two annual snapshot .xlsx files (plants & animals, communities)
+- append the annual snapshot tabular data to the historical dataset
+- export an updated machine-readable .csv for uploading to the [B.C. Data Catalogue](https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84)
+
+
+### More Information
 
 Current year BC Species and Ecosystems Conservation Status Information is available through the [BC Species & Ecosystems Explorer (BCSEE) on-line tool](http://a100.gov.bc.ca/pub/eswp/).
 
-You can read about the B.C. Conservation Data Centre [here](https://www2.gov.bc.ca/gov/content?id=018D1F92D3904A67890CDADC8E0E6019).
+You can learn about the B.C. Conservation Data Centre [here](https://www2.gov.bc.ca/gov/content?id=018D1F92D3904A67890CDADC8E0E6019).
 
