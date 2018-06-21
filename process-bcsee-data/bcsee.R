@@ -31,21 +31,11 @@ hist_bcsee_pa <- read_csv("https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f56
 
 ## Some temporary code to improve design of data object in B.C. Data Catalogue
 hist_bcsee_com <- hist_bcsee_com %>%
-  rename(Year = YEAR,
-         "CF – Action Groups" = "CF Action Groups",
-         "CF – Highest Priority" = "CF Highest Priority",
-         "CF – Priority Goal 1" = "CF Priority Goal 1",
-         "CF – Priority Goal 2" = "CF Priority Goal 2",
-         "CF – Priority Goal 3" = "CF Priority Goal 3") %>%
+  rename(Year = YEAR) %>%
   select(Year, everything())
 
 hist_bcsee_pa <- hist_bcsee_pa %>%
-  rename(Year = YEAR,
-         "CF – Action Groups" = "CF Action Groups",
-         "CF – Highest Priority" = "CF Highest Priority",
-         "CF – Priority Goal 1" = "CF Priority Goal 1",
-         "CF – Priority Goal 2" = "CF Priority Goal 2",
-         "CF – Priority Goal 3" = "CF Priority Goal 3") %>%
+  rename(Year = YEAR) %>%
   select(Year, everything())
 
 
@@ -56,8 +46,25 @@ Add_Year <- "2016"
 annual_snapshot_com <- "RecentYear_Communities.xlsx"
 annual_snapshot_pa <- "RecentYear_Plants_Animals.xlsx"
 
-new_com <- read_excel(file.path("process-bcsee-data/data", annual_snapshot_com), sheet = "bcsee_export", col_types = "text") %>% mutate(Year = Add_Year) %>% select(Year, everything())
-new_pa <- read_excel(file.path("process-bcsee-data/data", annual_snapshot_pa), sheet = "bcsee_export", col_types = "text") %>% mutate(Year = Add_Year) %>% select(Year, everything())
+new_com <- read_excel(file.path("process-bcsee-data/data", annual_snapshot_com),
+                      sheet = "bcsee_export", col_types = "text") %>%
+  mutate(Year = Add_Year) %>%
+  select(Year, everything()) %>%
+  rename("CF Action Groups" = "CF – Action Groups",
+         "CF Highest Priority" = "CF – Highest Priority",
+         "CF Priority Goal 1" = "CF – Priority Goal 1",
+         "CF Priority Goal 2" = "CF – Priority Goal 2",
+         "CF Priority Goal 3" = "CF – Priority Goal 3")
+
+new_pa <- read_excel(file.path("process-bcsee-data/data", annual_snapshot_pa),
+                     sheet = "bcsee_export", col_types = "text") %>%
+  mutate(Year = Add_Year) %>%
+  select(Year, everything()) %>%
+  rename("CF Action Groups" = "CF – Action Groups",
+         "CF Highest Priority" = "CF – Highest Priority",
+         "CF Priority Goal 1" = "CF – Priority Goal 1",
+         "CF Priority Goal 2" = "CF – Priority Goal 2",
+         "CF Priority Goal 3" = "CF – Priority Goal 3")
 
 
 ## Make sure columns in 'new_' and 'hist_bcsee' dataframes are the same
