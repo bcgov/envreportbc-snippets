@@ -1,0 +1,32 @@
+<!--
+Copyright 2018 Province of British Columbia
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and limitations under the License.
+-->
+
+
+<a id="devex-badge" rel="Delivery" href="https://github.com/BCDevExchange/assets/blob/master/README.md"><img alt="In production, but maybe in Alpha or Beta. Intended to persist and be supported." style="border-width:0" src="https://assets.bcdevexchange.org/images/badges/delivery.svg" title="In production, but maybe in Alpha or Beta. Intended to persist and be supported." /></a>
+
+## Process Historical BC Species and Ecosystems Conservation Status Information
+
+Process annual snapshot .xlsx files of BC Species and Ecosystems Conservation Status Information exported from Biotics:
+
+- format annual snapshot .xlsx files for the B.C. Data Catalogue 
+- append the annual snapshot .xlsx files to the historical [dataset for publishing in the B.C. Data Catalogue](https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84)
+
+
+This script supports the historical BC Species and Ecosystems Conservation Status Information dataset available in the [B.C. Data Catalogue](https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84) under the [Open Government Licence - British Columbia](https://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61). 
+
+
+Current BC Species and Ecosystems Conservation Status Information is available through the [BC Species & Ecosystems Explorer (BCSEE) on-line tool](http://a100.gov.bc.ca/pub/eswp/).
+
+
+
