@@ -32,15 +32,33 @@ hist_bcsee_pa <- read_csv("https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f56
 ## Some temporary code to improve design of data object in B.C. Data Catalogue
 hist_bcsee_com <- hist_bcsee_com %>%
   rename(Year = YEAR) %>%
-  select(Year, everything())
+  select(Year, everything()) %>%
+  mutate("Global Status Review Date" = format(as.Date(`Global Status Review Date`,
+                                                      format = "%d-%b-%y"),
+                                              "%Y-%m-%d"),
+         "Prov Status Review Date" = format(as.Date(`Prov Status Review Date`,
+                                                    format = "%d-%b-%y"),
+                                            "%Y-%m-%d"),
+         "Prov Status Change Date" = format(as.Date(`Prov Status Change Date`,
+                                                    format = "%d-%b-%y"),
+                                            "%Y-%m-%d"))
 
 hist_bcsee_pa <- hist_bcsee_pa %>%
   rename(Year = YEAR) %>%
-  select(Year, everything())
+  select(Year, everything()) %>%
+  mutate("Global Status Review Date" = format(as.Date(`Global Status Review Date`,
+                                                      format = "%d-%b-%y"),
+                                              "%Y-%m-%d"),
+         "Prov Status Review Date" = format(as.Date(`Prov Status Review Date`,
+                                                    format = "%d-%b-%y"),
+                                            "%Y-%m-%d"),
+         "Prov Status Change Date" = format(as.Date(`Prov Status Change Date`,
+                                                    format = "%d-%b-%y"),
+                                            "%Y-%m-%d"))
 
 
 ## Year of annual snapshot you are adding - update each time
-Add_Year <- "2016"
+Add_Year <- "2017"
 
 ## Load annual snapshot .xlsx data files from data/ folder & add Year
 annual_snapshot_com <- "RecentYear_Communities.xlsx"
@@ -72,19 +90,24 @@ new_pa <- read_excel(file.path("process-bcsee-data/data", annual_snapshot_pa),
 ##(https://cran.r-project.org/web/packages/dataCompareR/index.html)
 
 compare_com <- rCompare(new_com, hist_bcsee_com)
-compare_com_summary <- summary(compare_com)
+summary(compare_com)
 
 compare_pa <- rCompare(new_pa, hist_bcsee_pa)
-compare_pa_summary <- summary(compare_pa)
+summary(compare_pa)
 
 
 ## Add new year data to historical dataset and export as CSV
+
+if (!exists("process-bcsee-data/out")) dir.create("process-bcsee-data/out", showWarnings = FALSE)
+
 combined_bcsee_com <- bind_rows(hist_bcsee_com, new_com)
+
 write_csv(combined_bcsee_com,
           path = "process-bcsee-data/out/BCSEE_Communities.csv",
           na = "NA", append = FALSE)
 
 combined_bcsee_pa <- bind_rows(hist_bcsee_pa, new_pa)
+
 write_csv(combined_bcsee_pa,
           path = "process-bcsee-data/out/BCSEE_Plants_Animals.csv",
           na = "NA", append = FALSE)
