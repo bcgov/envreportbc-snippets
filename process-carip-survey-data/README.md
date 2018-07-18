@@ -17,11 +17,11 @@ See the License for the specific language governing permissions and limitations 
 
 ## Reformat CARIP Survey Response Data
 
-This script supports the (re)formatting of survey data from the [Climate Action Revenue Incentive Program (CARIP)](https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84). 
+This script supports the (re)formatting of survey data from the [Climate Action Revenue Incentive Program (CARIP)](https://www2.gov.bc.ca/gov/content?id=AE27DEC3441F40C9895735BA8B625B0E). 
 
 ### Usage
 
-Process annual [CARIP](https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84) Survey Monkey output .xlsx  data file:
+Process annual [CARIP](https://www2.gov.bc.ca/gov/content?id=AE27DEC3441F40C9895735BA8B625B0E) Survey Monkey output .xlsx  data file:
 
 - read in the .xlsx  data file from the data/ folder
 - run carip.R script
@@ -30,5 +30,5 @@ Process annual [CARIP](https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48
 
 ### More Information
 
-You can learn about the Climate Action Revenue Incentive Program (CARIP) [here](https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84).
+You can learn about the Climate Action Revenue Incentive Program (CARIP) [here](https://www2.gov.bc.ca/gov/content?id=AE27DEC3441F40C9895735BA8B625B0E).
 
