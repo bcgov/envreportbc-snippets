@@ -66,7 +66,7 @@ data <- select(all_data, 1, 10, 11, X__24:ncol(all_data)) %>%
 data_long <- gather(data, question, response, q0006_0001:q0103) %>%
   left_join(q_labels_df, by = "question") %>%
   mutate(q_num = as.integer(substr(q_num, 2, 5)),
-         sub_q = ifelse(sub_q == "other", 0L, as.integer(sub_q))) %>%
+         sub_q = ifelse(sub_q == "other" | is.na(sub_q), 0L, as.integer(sub_q))) %>%
   group_by(Respondent_ID, q_num) %>%
   mutate(
     question_type = case_when(
