@@ -8,20 +8,25 @@ data_year <- "2017"
 dir <- "process-carip-survey-data/data"
 filename <- paste0(data_year, " CARIP raw data file.xlsx")
 
-## First row (header) contains the main questions
-colnames_1 <- read_xlsx(file.path(dir, filename), col_names = FALSE, n_max = 1) %>% unlist
-
-## Second row contains the sub-questions/descriptions/options
-colnames_2 <- read_xlsx(file.path(dir, filename), col_names = FALSE, n_max = 1, skip = 1) %>% unlist
-
-## Temp alternative approach that is working
-colnames_1 <- read_xlsx(file.path(dir, filename), col_names = FALSE, range = "A1:LU1" ) %>% unlist
-colnames_2 <- read_xlsx(file.path(dir, filename), col_names = FALSE, range = "A2:LU2" ) %>% unlist
-
-## Read in the data without the first two rows of header information
+## First get the data, without the headers (2 rows)
 all_data <- read_xlsx(file.path(dir, filename), col_names = FALSE, skip = 2)
 
-## Drop off the metadata questions (1-5) and create an empty integer column to store question numbers
+## First row (header) contains the main questions. Use ncol of all_data to get
+## the cell range
+colnames_1 <- read_xlsx(file.path(dir, filename), col_names = FALSE,
+                        range = cell_limits(c(1,1), c(1, ncol(all_data)))) %>%
+  unlist()
+
+## Second row contains the sub-questions/descriptions/options. Use ncol of
+## all_data to get the cell range
+colnames_2 <- read_xlsx(file.path(dir, filename), col_names = FALSE,
+                        range = cell_limits(c(2,1), c(2, ncol(all_data)))) %>%
+  unlist()
+
+## Read in the data without the first two rows of header information
+
+## Drop off the metadata questions (1-5) and create an empty integer column
+## to store question numbers
 q_labels_df <- bind_cols(question_text = colnames_1, description = colnames_2) %>%
   slice(24:n()) %>%
   mutate(q_num = NA_integer_)
