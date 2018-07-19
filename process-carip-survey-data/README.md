@@ -23,7 +23,7 @@ This script supports the (re)formatting of survey data from the [Climate Action 
 
 Process annual [CARIP](https://www2.gov.bc.ca/gov/content?id=AE27DEC3441F40C9895735BA8B625B0E) Survey Monkey output .xlsx  data file:
 
-- read in the .xlsx  data file from the data/ folder
+- read in the .xlsx  raw data file from the data/ folder
 - run carip.R script
 - carip.R script writes out re-formatted .csv files for use
 
