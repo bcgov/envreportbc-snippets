@@ -23,8 +23,6 @@ colnames_2 <- read_xlsx(file.path(dir, filename), col_names = FALSE,
                         range = cell_limits(c(2,1), c(2, ncol(all_data)))) %>%
   unlist()
 
-## Read in the data without the first two rows of header information
-
 ## Drop off the metadata questions (1-5) and create an empty integer column
 ## to store question numbers
 q_labels_df <- bind_cols(question_text = colnames_1, description = colnames_2) %>%
