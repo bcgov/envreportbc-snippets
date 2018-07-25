@@ -44,12 +44,15 @@ data <- read_xlsx(file.path(dir, filename),
     rename(subsector_level2 = "..2",
          subsector_level3 = "..3") %>%
   select(-`Greenhouse Gas Categories`) %>%
-  select(subsector_level2, subsector_level3, everything())
+  mutate(subsector_level1 = subsector_level2) %>%
+  select(subsector_level1, subsector_level2, subsector_level3, everything())
 
-## Filter if NA present in both subsector_level2 & subsector_level3
-## Filter subsector_level1 from subsector_level2
 
-## Get the emission categories for joining
+## Replace subsector_level1 values that are actually subsector_level2
+## values with NA
+## Filter if NA present in both subsector_level1 & subsector_level2
+
+## Get the emission categories for joining-filling?
 catfile <- "emission_categories.csv"
 cats <- read_csv(file.path(dir, catfile))
 
