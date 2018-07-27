@@ -14,6 +14,8 @@
 library(readxl)
 library(dplyr)
 library(readr)
+library(stringr)
+library(tidyr)
 
 
 ## Import the .xlsx table from data/
@@ -33,31 +35,42 @@ metadata <- read_xlsx(file.path(dir, filename),
   rbind(units)
 
 
+## Get the emission categories as a helper
+catfile <- "emission_categories.csv"
+cats <- read_csv(file.path(dir, catfile))
+
+level1 <- unique(cats$subsector_level1)
+
 ## Get the column names
 newcols <- colnames(read_xlsx(file.path(dir, filename),
                               col_names = TRUE, skip = 1))
 
-## Get the core data, without the title, empty leading rows & metadata, & add new column names
+## Get the core data
+## without the title, empty leading rows & metadata
+## add new column names
+
 data <- read_xlsx(file.path(dir, filename),
                   col_names = newcols,
-                  skip = 6, n_max = 76) %>%
-    rename(subsector_level2 = "..2",
+                  skip = 7, n_max = 76) %>%
+  rename(sector = "Greenhouse Gas Categories",
+         subsector_level2 = "..2",
          subsector_level3 = "..3") %>%
-  select(-`Greenhouse Gas Categories`) %>%
-  mutate(subsector_level1 = subsector_level2) %>%
-  select(subsector_level1, subsector_level2, subsector_level3, everything())
+  mutate(sector =  str_replace(sector, "[a-zA-Z]\\.", NA_character_),
+         subsector_level2 = recode(subsector_level2,
+                                   `Transport1` = "Transport",
+                                   `Chemical Industry` = "Chemical Industry")) %>%
+  mutate(subsector_level1 = case_when(subsector_level2 %in% level1 ~ subsector_level2)) %>%
+  select(sector, subsector_level1, subsector_level2, subsector_level3, everything()) %>%
+  fill(sector) %>%
+  filter_at(vars(subsector_level1, subsector_level2, subsector_level3), any_vars(!is.na(.))) %>%
+  fill(subsector_level1)
 
+foo <- data %>% filter(sector == str_extract(sector, "[a-zA-Z]\\."))
+
+fill()
 
 ## Replace subsector_level1 values that are actually subsector_level2
 ## values with NA
-## Filter if NA present in both subsector_level1 & subsector_level2
-
-## Get the emission categories for joining-filling?
-catfile <- "emission_categories.csv"
-cats <- read_csv(file.path(dir, catfile))
-
-
-
 
 
 
