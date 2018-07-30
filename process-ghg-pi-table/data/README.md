@@ -20,6 +20,6 @@ The `ghg_pi.R` script, which converts the Provincial GHG Inventory Table into a 
 
 - e.g. `2015_provinicial_inventory.xlsx`
 
-Edit the `ghg_pi.R` script&mdash;`line 18`&mdash;to import using the appropriate file name.
+Edit the `ghg_pi.R` script&mdash;`line 21`&mdash;to import using the appropriate file name.
 
 
