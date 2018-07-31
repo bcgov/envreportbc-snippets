@@ -60,7 +60,7 @@ road_transport <- c("Light-Duty Gasoline Vehicles", "Light-Duty Gasoline Trucks"
 other_transport <- c("Off-Road Agriculture & Forestry", "Off-Road Commercial & Institutional", "Off-Road Manufacturing, Mining & Construction", "Off-Road Residential", "Off-Road Other Transportation", "Pipeline Transport")
 
 
-## Get the first the column names
+## Get the column names
 newcols <- colnames(read_xlsx(file.path(dir, filename),
                               col_names = TRUE, skip = 1))
 
@@ -97,7 +97,7 @@ data_wide <- read_xlsx(file.path(dir, filename),
                                      TRUE ~ subsector_level2))
 
 
-## Testing to make sure sums are same as ipout table
+## Testing to make sure sums are same as input table
 data_long <- data_wide %>%
   gather(key =  year, value = ktCO2e,
          -sector, -subsector_level1,
@@ -117,7 +117,7 @@ sector_totals <- data_long %>%
   summarise(sum = round(sum(ktCO2e, na.rm=TRUE), digits = 0))
 sector_totals
 
-## compare rstats totals with xls totals
+## compare rstats totals with xlsx totals
 sector_list <- c("ENERGY", "INDUSTRIAL PROCESSES AND PRODUCT USE", "AGRICULTURE", "WASTE", "Afforestation and Deforestation")
 
 compare_xls_totals <- read_xlsx(file.path(dir, filename),
