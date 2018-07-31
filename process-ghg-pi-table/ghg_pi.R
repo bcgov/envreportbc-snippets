@@ -126,7 +126,7 @@ compare_xls_totals <- read_xlsx(file.path(dir, filename),
   filter(`Greenhouse Gas Categories` %in% sector_list) %>%
   rename(sector = `Greenhouse Gas Categories`) %>%
   select(-"..2", -"..3") %>%
-  gather(key = year, value = ktCO2e, `sector`) %>%
+  gather(key = year, value = ktCO2e, -sector) %>%
   mutate(ktCO2e = round(as.numeric(ktCO2e), digits = 0),
          year = as.integer(as.character(year))) %>%
   left_join(sector_totals) %>%
