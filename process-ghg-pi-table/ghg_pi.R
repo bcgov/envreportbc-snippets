@@ -22,7 +22,7 @@ dir <- "process-ghg-pi-table/data"
 filename <- "2015_provincial_inventory.xlsx"
 
 
-## Get the metadata
+## Get the metadata from the sheet
 units <- read_xlsx(file.path(dir, filename),
                    col_names = c("Note", "blank1", "blank2", "Comment"),
                    range = cell_rows(6)) %>%
@@ -34,19 +34,22 @@ metadata <- read_xlsx(file.path(dir, filename),
   rbind(units)
 
 
-## Get the subsector level 1 emission categories from the B.C. Data Catalogue as a helper
-## Data is here https://catalogue.data.gov.bc.ca/dataset/24c899ee-ef73-44a2-8569-a0d6b094e60c
-## provided under the OGL-BC licence
+## Get the subsector level 1 emission categories from previous published data
+## provided under the OGL-BC licence in the B.C. Data Catalogue as a helper
+## https://catalogue.data.gov.bc.ca/dataset/24c899ee-ef73-44a2-8569-a0d6b094e60c
+
 level1 <- read_csv("https://catalogue.data.gov.bc.ca/dataset/24c899ee-ef73-44a2-8569-a0d6b094e60c/resource/11b1da01-fabc-406c-8b13-91e87f126dec/download/bcghgemissions.csv",
                    na=c("-","","NA")) %>%
   mutate(subsector_level1 = recode(subsector_level1,
                                    `Production and Consumption of Halocarbons, SF6 and NF3` = "Production and Consumption of Halocarbons, SF6 and NF33",
-                                   `Agriculture Soils` = "Agricultural Soils")) %>%
+                                   `Agriculture Soils` = "Agricultural Soils",
+                                   `Wastewater Handling` = "Wastewater Treatment and Discharge",
+                                   `Waste Incineration` = "Incineration and Open Burning of Waste")) %>%
   pull(subsector_level1) %>%
   unique()
 
 ## Create some similar helper vectors of emission categories
-level1_only <- c("CO2 Transport and Storage", "Production and Consumption of Halocarbons, SF6 and NF33", "Non-Energy Products from Fuels and Solvent Use", "Other Product Manufacture and Use",  "Enteric Fermentation",  "Manure Management", "Field Burning of Agricultural Residues", "Liming, Urea Application and Other Carbon-containing Fertilizers",  "Solid Waste Disposal", "Biological Treatment of Solid Waste", "Wastewater Handling", "Waste Incineration", "Deforestation", "Afforestation", "Grassland converted to Cropland", "Other Land converted to Wetlands", "Cropland Management","Wetland Management", "Grassland Management", "Settlement Management")
+level1_only <- c("CO2 Transport and Storage", "Production and Consumption of Halocarbons, SF6 and NF33", "Non-Energy Products from Fuels and Solvent Use", "Other Product Manufacture and Use",  "Enteric Fermentation",  "Manure Management", "Field Burning of Agricultural Residues", "Liming, Urea Application and Other Carbon-containing Fertilizers",  "Solid Waste Disposal", "Biological Treatment of Solid Waste", "Wastewater Treatment and Discharge", "Incineration and Open Burning of Waste", "Deforestation", "Afforestation", "Grassland converted to Cropland", "Other Land converted to Wetlands", "Cropland Management","Wetland Management", "Grassland Management", "Settlement Management")
 
 level3_to_2 <- c("Cement Production", "Lime Production", "Mineral Products Use", "Adipic Acid Production", "Iron and Steel Production", "Aluminum Production", "SF6 Used in Magnesium Smelters and Casters", "Direct Sources","Indirect Sources")
 
@@ -95,25 +98,44 @@ data_wide <- read_xlsx(file.path(dir, filename),
 
 
 ## Testing to make sure sums are same as ipout table
-data_long <- reshape2::melt(data_wide, id.vars=c("sector","subsector_level1","subsector_level2","subsector_level3"),variable.name="year", value.name="ktCO2e") %>%
+data_long <- data_wide %>%
+  gather(key =  year, value = ktCO2e,
+         -sector, -subsector_level1,
+         -subsector_level2, -subsector_level3) %>%
   mutate(ktCO2e = as.numeric(ktCO2e),
          year = as.integer(as.character(year)))
-
-foo <-
 
 totals <- data_long %>%
   filter(sector != "OTHER LAND USE (Not included in total B.C. emissions)") %>%
   group_by(year) %>%
-  summarise(sum = sum(ktCO2e, na.rm=TRUE))
+  summarise(sum = round(sum(ktCO2e, na.rm=TRUE), digits = 0))
 totals
 
-sector <- data_long %>%
+sector_totals <- data_long %>%
   filter(sector != "OTHER LAND USE (Not included in total B.C. emissions)") %>%
   group_by(sector, year) %>%
-  summarise(sum = sum(ktCO2e, na.rm=TRUE))
-sector
+  summarise(sum = round(sum(ktCO2e, na.rm=TRUE), digits = 0))
+sector_totals
+
+## compare rstats totals with xls totals
+sector_list <- c("ENERGY", "INDUSTRIAL PROCESSES AND PRODUCT USE", "AGRICULTURE", "WASTE", "Afforestation and Deforestation")
+
+compare_xls_totals <- read_xlsx(file.path(dir, filename),
+                       col_names = newcols,
+                       skip = 7, n_max = 76) %>%
+  filter(`Greenhouse Gas Categories` %in% sector_list) %>%
+  rename(sector = `Greenhouse Gas Categories`) %>%
+  select(-"..2", -"..3") %>%
+  gather(key = year, value = ktCO2e, `sector`) %>%
+  mutate(ktCO2e = round(as.numeric(ktCO2e), digits = 0),
+         year = as.integer(as.character(year))) %>%
+  left_join(sector_totals) %>%
+  mutate(diff = ktCO2e - sum)
+
+
 
 ## Save the re-formatted data as CSV file
 # write_csv(data_wide, (file.path(dir, paste0(data_year, "_bc_ghg_emissions.csv"))))
 # write_csv(metadata, (file.path(dir, paste0(data_year, "bc_ghg_emissions_metadata.csv"))))
+
 
