@@ -15,11 +15,12 @@ library(dplyr)
 library(readr)
 library(stringr)
 library(tidyr)
+library(glue)
 
 
 ## Import the .xlsx table from data/
 dir <- "process-ghg-pi-table/data"
-filename <- "2015_provincial_inventory.xlsx"
+filename <- "2016_draft_provincial_inventory.xlsx"
 
 
 ## Get the metadata from the sheet
@@ -97,8 +98,12 @@ data_wide <- read_xlsx(file.path(dir, filename),
                                      TRUE ~ subsector_level2))
 
 
+## Temp code to for 'x' values
+data_temp <- data_wide %>%
+  mutate(`2016` = recode(`2016`, `x` = "869"))
+
 ## Testing to make sure sums are same as input table
-data_long <- data_wide %>%
+data_long <- data_temp %>%
   gather(key =  year, value = ktCO2e,
          -sector, -subsector_level1,
          -subsector_level2, -subsector_level3) %>%
@@ -117,7 +122,7 @@ sector_totals <- data_long %>%
   summarise(sum = round(sum(ktCO2e, na.rm=TRUE), digits = 0))
 sector_totals
 
-## compare rstats totals with xlsx totals
+## compare rstats totals with xlsx table totals
 sector_list <- c("ENERGY", "INDUSTRIAL PROCESSES AND PRODUCT USE", "AGRICULTURE", "WASTE", "Afforestation and Deforestation")
 
 compare_xls_totals <- read_xlsx(file.path(dir, filename),
@@ -133,9 +138,9 @@ compare_xls_totals <- read_xlsx(file.path(dir, filename),
   mutate(diff = ktCO2e - sum)
 
 
-
 ## Save the re-formatted data as CSV file
-# write_csv(data_wide, (file.path(dir, paste0(data_year, "_bc_ghg_emissions.csv"))))
-# write_csv(metadata, (file.path(dir, paste0(data_year, "bc_ghg_emissions_metadata.csv"))))
+data_year <- "2016"
+write_csv(data_temp, (file.path(dir, glue("DRAFT_", data_year, "_bc_ghg_emissions.csv"))))
+write_csv(metadata, (file.path(dir, glue("DRAFT_", data_year, "_bc_ghg_emissions_metadata.csv"))))
 
 
