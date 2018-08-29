@@ -98,12 +98,8 @@ data_wide <- read_xlsx(file.path(dir, filename),
                                      TRUE ~ subsector_level2))
 
 
-## Temp code to for 'x' values
-data_temp <- data_wide %>%
-  mutate(`2016` = recode(`2016`, `x` = "869"))
-
 ## Testing to make sure sums are same as input table
-data_long <- data_temp %>%
+data_long <- data_wide %>%
   gather(key =  year, value = ktCO2e,
          -sector, -subsector_level1,
          -subsector_level2, -subsector_level3) %>%
@@ -140,7 +136,7 @@ compare_xls_totals <- read_xlsx(file.path(dir, filename),
 
 ## Save the re-formatted data as CSV file
 data_year <- "2016"
-write_csv(data_temp, (file.path(dir, glue("DRAFT_", data_year, "_bc_ghg_emissions.csv"))))
+write_csv(data_wide, (file.path(dir, glue("DRAFT_", data_year, "_bc_ghg_emissions.csv"))))
 write_csv(metadata, (file.path(dir, glue("DRAFT_", data_year, "_bc_ghg_emissions_metadata.csv"))))
 
 
