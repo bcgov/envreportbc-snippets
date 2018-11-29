@@ -73,8 +73,8 @@ data_wide <- read_xlsx(file.path(dir, filename),
                        col_names = newcols,
                        skip = 7, n_max = 76) %>%
   rename(sector = "Greenhouse Gas Categories",
-         subsector_level2 = "..2",
-         subsector_level3 = "..3") %>%
+         subsector_level2 = "X__1",
+         subsector_level3 = "X__2") %>%
   mutate(sector =  str_replace(sector, "[a-z]\\.", NA_character_),
          subsector_level2 = recode(subsector_level2,
                                    `Transport1` = "Transport",
@@ -95,7 +95,9 @@ data_wide <- read_xlsx(file.path(dir, filename),
   filter(!subsector_level2 %in% level3_transport | is.na(subsector_level2)) %>%
   mutate(subsector_level2 = case_when(subsector_level3 %in% road_transport ~ "Road Transportation",
                                      (subsector_level3 %in% other_transport) ~ "Other Transportation",
-                                     TRUE ~ subsector_level2))
+                                     TRUE ~ subsector_level2)) %>%
+  mutate_at(vars(-sector, -subsector_level1, -subsector_level2, -subsector_level3),
+            funs(round(as.numeric(.), digits = 2)))
 
 
 ## Testing to make sure sums are same as input table
@@ -126,7 +128,7 @@ compare_xls_totals <- read_xlsx(file.path(dir, filename),
                        skip = 7, n_max = 76) %>%
   filter(`Greenhouse Gas Categories` %in% sector_list) %>%
   rename(sector = `Greenhouse Gas Categories`) %>%
-  select(-"..2", -"..3") %>%
+  select(-"X__1", -"X__2") %>%
   gather(key = year, value = ktCO2e, -sector) %>%
   mutate(ktCO2e = round(as.numeric(ktCO2e), digits = 0),
          year = as.integer(as.character(year))) %>%
