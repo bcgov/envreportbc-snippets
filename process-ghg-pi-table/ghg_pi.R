@@ -20,18 +20,18 @@ library(glue)
 
 ## Import the .xlsx table from data/
 dir <- "process-ghg-pi-table/data"
-filename <- "2016_draft_provincial_inventory.xlsx"
-
+#filename <- "2016_draft_provincial_inventory.xlsx"
+filename <- "2017_draft_provincal_inventory.xlsx"
 
 ## Get the metadata from the sheet
-units <- read_xlsx(file.path(dir, filename),
+units <- read_xlsx(file.path(getwd(),dir, filename),
                    col_names = c("Note", "blank1", "blank2", "Comment"),
-                   range = cell_rows(6)) %>%
+                   range = cell_rows(5)) %>%
   select(Note, Comment)
 
-metadata <- read_xlsx(file.path(dir, filename),
+metadata <- read_xlsx(file.path(getwd(),dir, filename),
                       col_names = c("Note","Comment"),
-                      range = cell_rows(86:92)) %>%
+                      range = cell_rows(90:97)) %>%
   rbind(units)
 
 
@@ -40,7 +40,7 @@ metadata <- read_xlsx(file.path(dir, filename),
 ## https://catalogue.data.gov.bc.ca/dataset/24c899ee-ef73-44a2-8569-a0d6b094e60c
 
 level1 <- read_csv("https://catalogue.data.gov.bc.ca/dataset/24c899ee-ef73-44a2-8569-a0d6b094e60c/resource/11b1da01-fabc-406c-8b13-91e87f126dec/download/bcghgemissions.csv",
-                   na=c("-","","NA")) %>%
+                       na=c("-","","NA")) %>%
   mutate(subsector_level1 = recode(subsector_level1,
                                    `Production and Consumption of Halocarbons, SF6 and NF3` = "Production and Consumption of Halocarbons, SF6 and NF33",
                                    `Agriculture Soils` = "Agricultural Soils",
@@ -60,6 +60,7 @@ road_transport <- c("Light-Duty Gasoline Vehicles", "Light-Duty Gasoline Trucks"
 
 other_transport <- c("Off-Road Agriculture & Forestry", "Off-Road Commercial & Institutional", "Off-Road Manufacturing, Mining & Construction", "Off-Road Residential", "Off-Road Other Transportation", "Pipeline Transport")
 
+oil_gas <- c("Oil", "Natural Gas", "Venting", "Flaring")
 
 ## Get the column names
 newcols <- colnames(read_xlsx(file.path(dir, filename),
@@ -71,15 +72,16 @@ newcols <- colnames(read_xlsx(file.path(dir, filename),
 
 data_wide <- read_xlsx(file.path(dir, filename),
                        col_names = newcols,
-                       skip = 7, n_max = 76) %>%
+                       skip = 6, n_max = 81) %>%
   rename(sector = "Greenhouse Gas Categories",
-         subsector_level2 = "X__1",
-         subsector_level3 = "X__2") %>%
+         subsector_level2 = "...2",
+         subsector_level3 = "...3") %>%
   mutate(sector =  str_replace(sector, "[a-z]\\.", NA_character_),
          subsector_level2 = recode(subsector_level2,
                                    `Transport1` = "Transport",
                                    `Chemical Industry2` = "Chemical Industry")) %>%
-  mutate(subsector_level1 = case_when(subsector_level2 %in% level1 ~ subsector_level2)) %>%
+  mutate(subsector_level1 = case_when(
+    subsector_level2 %in% level1 ~ subsector_level2)) %>%
   select(sector, subsector_level1, subsector_level2, subsector_level3, everything()) %>%
   fill(sector) %>%
   filter_at(vars(subsector_level1, subsector_level2, subsector_level3),
@@ -96,8 +98,16 @@ data_wide <- read_xlsx(file.path(dir, filename),
   mutate(subsector_level2 = case_when(subsector_level3 %in% road_transport ~ "Road Transportation",
                                      (subsector_level3 %in% other_transport) ~ "Other Transportation",
                                      TRUE ~ subsector_level2)) %>%
+  mutate(subsector_level2 = case_when(subsector_level3 %in% oil_gas ~ "Oil and Natural Gas",
+                                      TRUE ~ subsector_level2)) %>%
+#  filter(!subsector_level2 %in% oil_gas | is.na(subsector_level2))
+
   mutate_at(vars(-sector, -subsector_level1, -subsector_level2, -subsector_level3),
             funs(round(as.numeric(.), digits = 2)))
+
+ data_wide <- data_wide[-28,]
+
+
 
 
 ## Testing to make sure sums are same as input table
@@ -117,18 +127,22 @@ totals
 sector_totals <- data_long %>%
   filter(sector != "OTHER LAND USE (Not included in total B.C. emissions)") %>%
   group_by(sector, year) %>%
-  summarise(sum = round(sum(ktCO2e, na.rm=TRUE), digits = 0))
+  summarise(sum = round(sum(ktCO2e, na.rm=TRUE), digits = 0)) %>%
+  mutate(year = as.integer(as.character(year))) %>%
+  filter(!is.na(year))
+
 sector_totals
+
 
 ## compare rstats totals with xlsx table totals
 sector_list <- c("ENERGY", "INDUSTRIAL PROCESSES AND PRODUCT USE", "AGRICULTURE", "WASTE", "Afforestation and Deforestation")
 
 compare_xls_totals <- read_xlsx(file.path(dir, filename),
                        col_names = newcols,
-                       skip = 7, n_max = 76) %>%
+                       skip = 6, n_max = 81) %>%
   filter(`Greenhouse Gas Categories` %in% sector_list) %>%
   rename(sector = `Greenhouse Gas Categories`) %>%
-  select(-"X__1", -"X__2") %>%
+  select(-"...2", -"...3") %>%
   gather(key = year, value = ktCO2e, -sector) %>%
   mutate(ktCO2e = round(as.numeric(ktCO2e), digits = 0),
          year = as.integer(as.character(year))) %>%
@@ -137,7 +151,7 @@ compare_xls_totals <- read_xlsx(file.path(dir, filename),
 
 
 ## Save the re-formatted data as CSV file
-data_year <- "2016"
+data_year <- "2017"
 write_csv(data_wide, (file.path(dir, glue("DRAFT_", data_year, "_bc_ghg_emissions.csv"))))
 write_csv(metadata, (file.path(dir, glue("DRAFT_", data_year, "_bc_ghg_emissions_metadata.csv"))))
 
