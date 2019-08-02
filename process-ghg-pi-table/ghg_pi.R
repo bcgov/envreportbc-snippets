@@ -100,14 +100,13 @@ data_wide <- read_xlsx(file.path(dir, filename),
                                      TRUE ~ subsector_level2)) %>%
   mutate(subsector_level2 = case_when(subsector_level3 %in% oil_gas ~ "Oil and Natural Gas",
                                       TRUE ~ subsector_level2)) %>%
+  select(-c("...32", "2007-2017 (10-year trend)","2016-2017 change (gross)","3-year trend")) %>%
 #  filter(!subsector_level2 %in% oil_gas | is.na(subsector_level2))
-
   mutate_at(vars(-sector, -subsector_level1, -subsector_level2, -subsector_level3),
             funs(round(as.numeric(.), digits = 2)))
 
+# quick fix to remove the NA "oil and Gas totals row"
  data_wide <- data_wide[-28,]
-
-
 
 
 ## Testing to make sure sums are same as input table
