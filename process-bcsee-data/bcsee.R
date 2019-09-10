@@ -28,35 +28,6 @@ hist_bcsee_com <- read_csv("https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f5
 ## plants & animals
 hist_bcsee_pa <- read_csv("https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84/resource/39aa3eb8-da10-49c5-8230-a3b5fd0006a9/download/bcseeplantsanimals.csv", col_types = cols(.default = col_character()), na = c("","NA"))
 
-
-## Some temporary code to improve design of data object in B.C. Data Catalogue
-hist_bcsee_com <- hist_bcsee_com %>%
-  rename(Year = YEAR) %>%
-  select(Year, everything()) %>%
-  mutate("Global Status Review Date" = format(as.Date(`Global Status Review Date`,
-                                                      format = "%d-%b-%y"),
-                                              "%Y-%m-%d"),
-         "Prov Status Review Date" = format(as.Date(`Prov Status Review Date`,
-                                                    format = "%d-%b-%y"),
-                                            "%Y-%m-%d"),
-         "Prov Status Change Date" = format(as.Date(`Prov Status Change Date`,
-                                                    format = "%d-%b-%y"),
-                                            "%Y-%m-%d"))
-
-hist_bcsee_pa <- hist_bcsee_pa %>%
-  rename(Year = YEAR) %>%
-  select(Year, everything()) %>%
-  mutate("Global Status Review Date" = format(as.Date(`Global Status Review Date`,
-                                                      format = "%d-%b-%y"),
-                                              "%Y-%m-%d"),
-         "Prov Status Review Date" = format(as.Date(`Prov Status Review Date`,
-                                                    format = "%d-%b-%y"),
-                                            "%Y-%m-%d"),
-         "Prov Status Change Date" = format(as.Date(`Prov Status Change Date`,
-                                                    format = "%d-%b-%y"),
-                                            "%Y-%m-%d"))
-
-
 ## Year of annual snapshot you are adding - update each time
 Add_Year <- "2017"
 
