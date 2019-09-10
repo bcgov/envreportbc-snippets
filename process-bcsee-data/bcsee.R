@@ -22,10 +22,12 @@ library(dataCompareR) # compare dataframes
 ## https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84
 
 ## communities
-hist_bcsee_com <- read_csv("https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84/resource/bbacd6fb-6708-4cf8-b353-0dc5ef75b7b9/download/bcseecommunities.csv", col_types = cols(.default = col_character()), na = c("","NA"))
+hist_bcsee_com <- read_csv("https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84/resource/bbacd6fb-6708-4cf8-b353-0dc5ef75b7b9/download/bcseecommunities.csv", col_types = cols(.default = col_character()), na = c("","NA")) %>%
+  mutate_at(vars(ends_with("Date")), as.Date)
 
 ## plants & animals
-hist_bcsee_pa <- read_csv("https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84/resource/39aa3eb8-da10-49c5-8230-a3b5fd0006a9/download/bcseeplantsanimals.csv", col_types = cols(.default = col_character()), na = c("","NA"))
+hist_bcsee_pa <- read_csv("https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84/resource/39aa3eb8-da10-49c5-8230-a3b5fd0006a9/download/bcseeplantsanimals.csv", col_types = cols(.default = col_character()), na = c("","NA")) %>%
+  mutate_at(vars(ends_with("Date")), as.Date)
 
 ## Year of annual snapshot you are adding - update each time
 Add_Year <- "2018"
@@ -52,7 +54,7 @@ to_date_from_excel <- function(x, version = c("win_new_mac", "mac_08")) {
 
 sheet_format <- . %>%
   mutate(Year = Add_Year) %>%
-  mutate_if(grepl("Date$", names(.)), to_date_from_excel) %>%
+  mutate_at(vars(ends_with("Date")), to_date_from_excel) %>%
   select(Year, everything())
 
 new_com <- read_excel(file.path("process-bcsee-data/data", annual_snapshot_com),
