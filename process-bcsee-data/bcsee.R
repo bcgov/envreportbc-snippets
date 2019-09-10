@@ -33,27 +33,41 @@ Add_Year <- "2018"
 ## Load annual snapshot .xlsx data files from data/ folder & add Year
 annual_snapshot_com <- paste0(Add_Year, "_Communities.xlsx")
 annual_snapshot_p <- paste0(Add_Year, "_Plants.xlsx")
-annual_snapshot_a <- paste0(Add_Year, "_Animals.xls")
+annual_snapshot_a <- paste0(Add_Year, "_Animals.xlsx")
+
+to_date_from_excel <- function(x, version = c("win_new_mac", "mac_08")) {
+  # Excel dates are formatted as number of days since Jan 1, 1900. However,
+  # Excel thinks 1900 was a leap year (it wasn't) and Excel treats the origin
+  # as Day 1, while R treats the origin as Day 0. So need to subtract two days.
+  # Unless you are using Excel for Mac 2008 or earlier, in which case the origin
+  # is 1904-01-01 and that is Day 0
+  version = match.arg(version)
+
+  origin = switch(version,
+                  win_new_mac = as.Date("1900-01-01") - 2,
+                  mac_08 = as.Date("1904-01-01"))
+
+  as.Date(as.numeric(x), origin = origin)
+}
+
+sheet_format <- . %>%
+  mutate(Year = Add_Year) %>%
+  mutate_if(grepl("Date$", names(.)), to_date_from_excel) %>%
+  select(Year, everything())
 
 new_com <- read_excel(file.path("process-bcsee-data/data", annual_snapshot_com),
                       sheet = "bcsee_export", col_types = "text") %>%
-  mutate(Year = Add_Year) %>%
-  select(Year, everything()) %>%
-  rename("CF Action Groups" = "CF – Action Groups",
-         "CF Highest Priority" = "CF – Highest Priority",
-         "CF Priority Goal 1" = "CF – Priority Goal 1",
-         "CF Priority Goal 2" = "CF – Priority Goal 2",
-         "CF Priority Goal 3" = "CF – Priority Goal 3")
+  sheet_format()
 
-new_pa <- read_excel(file.path("process-bcsee-data/data", annual_snapshot_pa),
+new_p <- read_excel(file.path("process-bcsee-data/data", annual_snapshot_p),
                      sheet = "bcsee_export", col_types = "text") %>%
-  mutate(Year = Add_Year) %>%
-  select(Year, everything()) %>%
-  rename("CF Action Groups" = "CF – Action Groups",
-         "CF Highest Priority" = "CF – Highest Priority",
-         "CF Priority Goal 1" = "CF – Priority Goal 1",
-         "CF Priority Goal 2" = "CF – Priority Goal 2",
-         "CF Priority Goal 3" = "CF – Priority Goal 3")
+  sheet_format()
+
+new_a <- read_excel(file.path("process-bcsee-data/data", annual_snapshot_a),
+                     sheet = "bcsee_export", col_types = "text") %>%
+  sheet_format()
+
+new_pa <- bind_rows(new_a, new_p)
 
 
 ## Make sure columns in 'new_' and 'hist_bcsee' dataframes are the same
