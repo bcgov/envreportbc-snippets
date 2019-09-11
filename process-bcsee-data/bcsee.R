@@ -75,6 +75,8 @@ new_a <- read_excel(file.path("process-bcsee-data/data", annual_snapshot_a),
 
 new_pa <- bind_rows(new_a, new_p)
 
+new_pa <- new_pa[sapply(new_pa, function(x) !all(is.na(x)))]
+
 
 ## Make sure columns in 'new_' and 'hist_bcsee' dataframes are the same
 ## using the dataCompareR package
@@ -83,16 +85,16 @@ new_pa <- bind_rows(new_a, new_p)
 compare_com <- rCompare(new_com, hist_bcsee_com)
 summary(compare_com)
 
-subs <- c(
-  "BGC" = "Biogeoclimatic Units",
-  "Forest Dist" = "Forest District",
-  "Provincial FRPA" = "Identified Wildlife"
-)
-
-hist_bcsee_com <- rename(hist_bcsee_com, !!!subs)
+# Change old names to new names
+hist_bcsee_com <- rename(hist_bcsee_com,
+                         "BGC" = "Biogeoclimatic Units",
+                         "Forest Dist" = "Forest District",
+                         "Provincial FRPA" = "Identified Wildlife")
 
 compare_pa <- rCompare(new_pa, hist_bcsee_pa)
 summary(compare_pa)
+
+hist_bcsee_pa <- rename(hist_bcsee_pa, "Provincial FRPA" = "Identified Wildlife")
 
 
 ## Add new year data to historical dataset and export as CSV
@@ -103,10 +105,10 @@ combined_bcsee_com <- bind_rows(hist_bcsee_com, new_com)
 
 write_csv(combined_bcsee_com,
           path = "process-bcsee-data/out/BCSEE_Communities.csv",
-          na = "NA", append = FALSE)
+          na = "", append = FALSE)
 
 combined_bcsee_pa <- bind_rows(hist_bcsee_pa, new_pa)
 
 write_csv(combined_bcsee_pa,
           path = "process-bcsee-data/out/BCSEE_Plants_Animals.csv",
-          na = "NA", append = FALSE)
+          na = "", append = FALSE)
