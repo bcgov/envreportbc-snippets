@@ -59,7 +59,11 @@ sheet_format <- . %>%
 
 new_com <- read_excel(file.path("process-bcsee-data/data", annual_snapshot_com),
                       sheet = "bcsee_export", col_types = "text") %>%
-  sheet_format()
+  sheet_format() %>%
+  select(-Kingdom, -`Name Category`)
+
+# Drop columns which are all NA
+new_com <- new_com[sapply(new_com, function(x) !all(is.na(x)))]
 
 new_p <- read_excel(file.path("process-bcsee-data/data", annual_snapshot_p),
                      sheet = "bcsee_export", col_types = "text") %>%
@@ -78,6 +82,14 @@ new_pa <- bind_rows(new_a, new_p)
 
 compare_com <- rCompare(new_com, hist_bcsee_com)
 summary(compare_com)
+
+subs <- c(
+  "BGC" = "Biogeoclimatic Units",
+  "Forest Dist" = "Forest District",
+  "Provincial FRPA" = "Identified Wildlife"
+)
+
+hist_bcsee_com <- rename(hist_bcsee_com, !!!subs)
 
 compare_pa <- rCompare(new_pa, hist_bcsee_pa)
 summary(compare_pa)
