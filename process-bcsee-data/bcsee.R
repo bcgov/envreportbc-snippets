@@ -17,6 +17,8 @@ library(readxl) #load xlsx files
 library(dplyr) # data munging
 library(dataCompareR) # compare dataframes
 
+source("R/functions.R")
+
 ## Load historical datset from the BC Data Catalogue, distributed under the
 ## Open Government Licence - British Columbia:
 ## https://catalogue.data.gov.bc.ca/dataset/d3651b8c-f560-48f7-a34e-26b0afc77d84
@@ -36,21 +38,6 @@ Add_Year <- "2018"
 annual_snapshot_com <- paste0(Add_Year, "_Communities.xlsx")
 annual_snapshot_p <- paste0(Add_Year, "_Plants.xlsx")
 annual_snapshot_a <- paste0(Add_Year, "_Animals.xlsx")
-
-to_date_from_excel <- function(x, version = c("win_new_mac", "mac_08")) {
-  # Excel dates are formatted as number of days since Jan 1, 1900. However,
-  # Excel thinks 1900 was a leap year (it wasn't) and Excel treats the origin
-  # as Day 1, while R treats the origin as Day 0. So need to subtract two days.
-  # Unless you are using Excel for Mac 2008 or earlier, in which case the origin
-  # is 1904-01-01 and that is Day 0
-  version = match.arg(version)
-
-  origin = switch(version,
-                  win_new_mac = as.Date("1900-01-01") - 2,
-                  mac_08 = as.Date("1904-01-01"))
-
-  as.Date(as.numeric(x), origin = origin)
-}
 
 sheet_format <- . %>%
   mutate(Year = Add_Year) %>%
