@@ -17,11 +17,12 @@ library(stringr)
 library(tidyr)
 library(glue)
 
-
 ## Import the .xlsx table from data/
 dir <- "process-ghg-pi-table/data"
-#filename <- "2016_draft_provincial_inventory.xlsx"
-filename <- "2017_draft_provincal_inventory.xlsx"
+filename <- "2017_provincal_inventory.xlsx"
+
+download.file("https://www2.gov.bc.ca/assets/gov/environment/climate-change/data/provincial-inventory/2017/2017_provincial_inventory.xlsx",
+              destfile = file.path(dir, filename))
 
 ## Get the metadata from the sheet
 units <- read_xlsx(file.path(getwd(),dir, filename),
@@ -151,7 +152,7 @@ compare_xls_totals <- read_xlsx(file.path(dir, filename),
 
 ## Save the re-formatted data as CSV file
 data_year <- "2017"
-write_csv(data_wide, (file.path(dir, glue("DRAFT_", data_year, "_bc_ghg_emissions.csv"))))
-write_csv(metadata, (file.path(dir, glue("DRAFT_", data_year, "_bc_ghg_emissions_metadata.csv"))))
+write_csv(data_wide, (file.path(dir, glue(data_year, "_bc_ghg_emissions.csv"))))
+write_csv(metadata, (file.path(dir, glue(data_year, "_bc_ghg_emissions_metadata.csv"))))
 
 
