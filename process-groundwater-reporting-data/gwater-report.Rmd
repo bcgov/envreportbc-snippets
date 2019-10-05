@@ -32,6 +32,10 @@ library(lubridate)
 wfile <- file.path("process-groundwater-reporting-data/data",
                    "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx")
 
+
+wfile <- file.path("data",
+                   "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx")
+
 #wfile <- file.path(
 #  soe_path("Operations ORCS/Special Projects/Water Program/Groundwater Wells Reporting/Data"),
 #  "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx"
@@ -112,15 +116,9 @@ ggplot(well.stats, aes(Region, perc_gt7m)) +
 library(bcmaps)
 library(bcdata)
 
-
-  rmapshaper::ms_simplify(0.01) %>%
-  st_intersection(bc_bound()) %>%
-  st_transform(4326) %>%
-  group_by(ADMIN_AREA_NAME,ADMIN_AREA_ABBREVIATION) %>%
-  summarize()
-
 # read in the mapping base data	
 regions <- 	bcdc_get_data("fefa94a1-d959-46c4-9d29-bf144ca736e8") %>%
+   st_transform(4326) %>%
   select(REGION_NAME) %>%
   mutate(REGION_NAME = ifelse(REGION_NAME %in% c("Okanagan","Kootenay"),
                               "Okanagan/Kootenay", 
@@ -138,8 +136,13 @@ regions <- regions %>% left_join(well.stats)
 Provincial Groundwater Observation Well Network (PGOWN) summary, by FLNRO boundaries, of the % of wells with water level data that has not been validated within the past 7 months and the average age (months) since the water level data has been validated. The target is validated data no greater than 7 months of age.
 
 
+# create a table 
 
 
+
+
+
+# create a leaflet map 
 
 
 
