@@ -20,33 +20,39 @@ library(tidyr)
 library(stringr)
 
 
-wfile <- file.path(
-  soe_path("Operations ORCS/Special Projects/Water Program/Groundwater Wells Reporting/Data"),
-           "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx"
-)
+wfile <- file.path("process-groundwater-reporting-data/data",
+                   "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx")
+
+#wfile <- file.path(
+#  soe_path("Operations ORCS/Special Projects/Water Program/Groundwater Wells Reporting/Data"),
+#  "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx"
+#)
 
 
 wdata <- read_excel(wfile, sheet = "Feb 2019", range = "A2:J228",
-                  col_names = c("Region", "Data_graded", "Well_ID", "Location",
-                          "Date_Validated", "Months_since_val", "foo","initial_cost","foo1", "comment"),
-                  col_types = c("text", "text", "text","text", "date", "text",
-                                "text", "text", "text","text")) %>%
-                select(-c("foo", "foo1")) %>%
-
-wdata <- wdata %>%
-  mutate(Region = ifelse(str_detect(Region, "%"),"NA",Region),
-         Region = ifelse(str_detect(Region, "Total"),"NA",Region))
-
-                         ifelse(str_detect(Region, "Total", "NA"),Region)))
-
-  mutate(test = str_detect(measure_long,"Population|Per Person")) %>%
-           filter(test == "FALSE")
-
-
-wdata <- wdata %>%
+                    col_names = c("Region", "Data_graded", "Well_ID", "Location",
+                                  "Date_Validated", "Months_since_val", "foo","initial_cost","foo1", "comment"),
+                    col_types = c("text", "text", "text","text", "date", "text",
+                                  "text", "text", "text","text")) %>%
+  select(-c("foo", "foo1")) %>%
+  mutate(Region = ifelse(str_detect(Region, "%"),NA ,Region),
+         Region = ifelse(str_detect(Region, "Total"),NA ,Region)) %>%
+  filter_all(any_vars(!is.na(.))) %>%
   fill(Region)
 
+# remove the rows with all NA : still to do.
+#sum(is.na(wdata[1,1:7]))
 
 
-fill(data, ..., .direction = c("down", "up", "downup", "updown"))
+# format dates  calculate months since ...
+
+wdata <- wdata %>%
+  mutate(dateCheckToday = round(interval(ymd(wdata$Date_Validated),
+                                         ymd(Sys.Date()))/ months(1), 0),
+         dateCheckFeb20 = round(interval(ymd(wdata$Date_Validated),
+                                         ymd("2020-02-01"))/ months(1), 0),
+         dateCheckJuly20 = round(interval(ymd(wdata$Date_Validated),
+                                          ymd("2020-07-01"))/ months(1), 0))
+
+# calculate the summary stats per region
 
