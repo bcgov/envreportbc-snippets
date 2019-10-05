@@ -1,0 +1,164 @@
+---
+title: "Provincial Groundwater Observation Well Network (PGOWN) summary"
+output: pdf_document
+---
+<!--
+Copyright 2019 Province of British Columbia
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and limitations under the License.
+-->
+
+
+```{r setup, include=FALSE}
+
+## Load libraries
+library(readr) #load data from BC Data Catalogue
+library(readxl) #load xlsx files
+library(dplyr) # data munging
+library(envreportutils)
+library(tidyr)
+library(stringr)
+library(lubridate)
+
+
+wfile <- file.path("process-groundwater-reporting-data/data",
+                   "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx")
+
+#wfile <- file.path(
+#  soe_path("Operations ORCS/Special Projects/Water Program/Groundwater Wells Reporting/Data"),
+#  "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx"
+#)
+
+```
+
+```{r, echo = FALSE, interval= FALSE, warning = FALSE}
+
+wdata <- read_excel(wfile, sheet = "Feb 2019", range = "A2:J228",
+                    col_names = c("Region", "Data_graded", "Well_ID", "Location",
+                                  "Date_Validated", "Months_since_val", "foo","initial_cost","foo1", "comment"),
+                    col_types = c("text", "text", "text","text", "date", "text",
+                                  "text", "text", "text","text")) %>%
+  select(-c("foo", "foo1")) %>%
+  mutate(Region = ifelse(str_detect(Region, "%"),NA ,Region),
+         Region = ifelse(str_detect(Region, "Total"),NA ,Region), 
+         initial_cost = as.numeric(initial_cost)) %>%
+  fill(Region) %>%
+  filter_at(.vars = vars(Data_graded, Well_ID), .vars_predicate = any_vars(!is.na(.)))
+
+
+# format dates  calculate months since ...
+
+wdata <- wdata %>%
+  mutate(dateCheckToday = round(interval(ymd(wdata$Date_Validated),
+                                         ymd(Sys.Date()))/ months(1), 0),
+         dateCheckFeb19 = round(interval(ymd(wdata$Date_Validated),
+                                         ymd("2019-02-01"))/ months(1), 0),
+         dateCheckJuly20 = round(interval(ymd(wdata$Date_Validated),
+                                          ymd("2020-07-01"))/ months(1), 0))
+
+# calculate the summary stats per region -----------------------------
+
+# finacial start up cost
+well.cost <- wdata %>%
+  group_by(Region) %>% 
+  summarise(invest_cost = sum(initial_cost, na.rm = TRUE))
+
+# number of active wells and graded / not graded
+
+well.stats <- wdata %>% 
+  group_by(Region) %>%
+  count(Data_graded) %>%
+  filter(!is.na(Data_graded)) %>%
+  mutate(Data_graded = ifelse(Data_graded == "-", "Well_inactive", 
+                              ifelse(Data_graded == "N", "Wells_nograde", 
+                                     ifelse(Data_graded == "Y", "Wells_yesgrade", Data_graded)))) %>%
+  spread(., key = Data_graded, value = n,fill = 0) %>%
+  mutate(Wells_ActiveTotal = sum( Wells_nograde,Wells_yesgrade))
+
+well.stats <- left_join(well.stats, well.cost)
+
+# percent of wells not validate in the last seven months 
+
+well.time.stats <- wdata %>% 
+  group_by(Region) %>%
+  summarise(n_gt7 = sum(dateCheckFeb19 > 7, na.rm = TRUE),
+            m_ave = mean(dateCheckFeb19 , na.rm = TRUE), 
+            m_total = sum(dateCheckFeb19, na.rm = TRUE))  # GP TO CHECK - this may be including inactive wells? 
+ 
+well.stats <- left_join(well.stats, well.time.stats) 
+
+well.stats <- well.stats %>%
+  mutate (perc_gt7m =(n_gt7 / Wells_ActiveTotal) * 100 , 
+          per_grad= (Wells_yesgrade / Wells_ActiveTotal) * 100)
+        
+
+# make a pretty plot 
+
+library(ggplot2) 
+well.plot <- 
+  
+ggplot(well.stats, aes(Region, perc_gt7m)) + 
+  geom_bar()
+
+
+library(bcmaps)
+library(bcdata)
+
+
+  rmapshaper::ms_simplify(0.01) %>%
+  st_intersection(bc_bound()) %>%
+  st_transform(4326) %>%
+  group_by(ADMIN_AREA_NAME,ADMIN_AREA_ABBREVIATION) %>%
+  summarize()
+
+# read in the mapping base data	
+regions <- 	bcdc_get_data("fefa94a1-d959-46c4-9d29-bf144ca736e8") %>%
+  select(REGION_NAME) %>%
+  mutate(REGION_NAME = ifelse(REGION_NAME %in% c("Okanagan","Kootenay"),
+                              "Okanagan/Kootenay", 
+                              ifelse(REGION_NAME %in% c("Omineca", "Peace"),
+                                     "Ominca/Peace", 
+                                     ifelse(REGION_NAME %in% c("Cariboo", "Thompson"), "Cariboo/Thompson", REGION_NAME))), 
+         Region = REGION_NAME) 
+
+regions <- regions %>% left_join(well.stats)
+	
+	
+
+```
+
+Provincial Groundwater Observation Well Network (PGOWN) summary, by FLNRO boundaries, of the % of wells with water level data that has not been validated within the past 7 months and the average age (months) since the water level data has been validated. The target is validated data no greater than 7 months of age.
+
+
+
+
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
