@@ -1,6 +1,6 @@
 ---
 title: "Provincial Groundwater Observation Well Network (PGOWN) summary"
-output: pdf_document
+output: html_document
 ---
 <!--
 Copyright 2019 Province of British Columbia
@@ -16,6 +16,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 -->
 
+Provincial Groundwater Observation Well Network (PGOWN) summary, by FLNRO boundaries, of the % of wells with water level data that has not been validated within the past 7 months and the average age (months) since the water level data has been validated. The target is validated data no greater than 7 months of age.
+
+```{r include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+
+```
+
 
 ```{r setup, include=FALSE}
 
@@ -27,23 +34,24 @@ library(envreportutils)
 library(tidyr)
 library(stringr)
 library(lubridate)
+library(gridExtra)
 
 
 #wfile <- file.path("process-groundwater-reporting-data/data",
 #                   "MASTER_Metrics for Publicly Available PGOWN Validated #Data.xlsx")
 
 
-wfile <- file.path("data",
-                   "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx")
+#wfile <- file.path("data",
+#                   "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx")
 
-#wfile <- file.path(
-#  soe_path("Operations ORCS/Special Projects/Water Program/Groundwater Wells Reporting/Data"),
-#  "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx"
-#)
+wfile <- file.path(
+  soe_path("Operations ORCS/Special Projects/Water Program/Groundwater Wells Reporting/Data"),
+  "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx"
+)
 
 ```
 
-```{r, echo = FALSE, interval= FALSE, warning = FALSE}
+```{r, echo = FALSE, interval= FALSE, warning = FALSE, results = "hide"}
 
 # format the most recent dataset 
 
@@ -109,7 +117,24 @@ well.stats$Region = factor(well.stats$Region, ordered = TRUE, levels = c("Skeena
 
 #write.csv(well.stats, file.path("process-groundwater-reporting-data/output/", "test.csv"))
 
+# format table 
+well.table <- well.stats %>%
+  select(c(Region, Wells_ActiveTotal, perc_gt7m, m_ave )) %>%
+  rename(Region = Region, 
+         `Total Active Wells` = Wells_ActiveTotal, 
+         `% of well >7m` = perc_gt7m, 
+         `Average age (months)` = m_ave) %>%
+  mutate(`% of well >7m` = round(`% of well >7m`,1) , 
+         `Average age (months)` = round(`Average age (months)`,1))
 
+
+well.table <- well.table %>%
+  arrange(Region)
+
+```
+
+```{r, include = TRUE, echo= FALSE}
+knitr::kable(well.table)
 ```
 
 
@@ -119,7 +144,7 @@ library(ggplot2)
   
 # percent of wells validated within the prvious 7 months 
 # note inverted number 
-ggplot(well.stats, aes(Region, 100 - perc_gt7m)) + 
+p1 <- ggplot(well.stats, aes(Region, 100 - perc_gt7m)) + 
   geom_bar(stat = "identity") + 
   coord_flip() + 
   ylim(0,100) + 
@@ -127,7 +152,7 @@ ggplot(well.stats, aes(Region, 100 - perc_gt7m)) +
        x = "", y = "Percentage of active wells")
 
   
-ggplot(well.stats, aes(Region, m_ave)) + 
+p2 <-ggplot(well.stats, aes(Region, m_ave)) + 
   geom_bar(stat = "identity") + 
   coord_flip() + 
   geom_text(aes(label= round(m_ave, 1), hjust = -1))+ 
@@ -137,6 +162,15 @@ ggplot(well.stats, aes(Region, m_ave)) +
   geom_hline(yintercept=7, linetype="dashed", color = "red")
 
 
+```
+
+```{r, echo = FALSE}
+library(gridExtra)
+grid.arrange(p1, p2, ncol=2)
+
+```
+
+```{r, set-upmap, echo = FALSE, results = "hide"}
 
 library(bcmaps)
 library(bcdata)
@@ -154,8 +188,64 @@ regions <- 	bcdc_get_data("fefa94a1-d959-46c4-9d29-bf144ca736e8") %>%
          Region = REGION_NAME) 
 
 regions <- regions %>% left_join(well.stats)
-	
-	
+
+```
+
+Click on the maps below to explore the trends across the province.
+
+# {.tabset .tabset-fade}
+
+##  Interactive map 
+```{r, echo = FALSE}
+library(leaflet)
+
+labs <- dplyr::select(regions, Region, Wells_ActiveTotal,invest_cost, per_grad)
+st_geometry(labs) <- NULL
+
+lab1 <- lapply(seq(nrow(labs)), function(i) {
+  paste0( '<b>', labs[i, "Region"], ', ',  
+          labs[i, "invest_cost"], '</b>') 
+})
+
+palette1 <- colorFactor(palette = 'viridis', regions$Wells_ActiveTotal, reverse = TRUE)
+
+
+watermap <- leaflet(width = "900px", height = "600px", 
+                    options = leafletOptions(minZoom = 5)) %>%  
+  addProviderTiles(providers$Stamen.Terrain, group = "Terrain") %>%
+  add_bc_home_button() %>%
+  set_bc_view()
+
+watermap %>% 
+  addPolygons(data = regions, group = "Conservation Status",
+              stroke = T, weight = 1, color = "black", # Add border to polygons
+              fillOpacity = 0.5, # Polygon fill
+              fillColor = ~palette1(regions$Wells_ActiveTotal),
+              label = lapply(lab1, htmltools::HTML),
+              labelOptions = labelOptions(direction = "auto", textsize = "12px"),
+              #popup = constatus_popup,
+              #popupOptions = popupOptions(maxWidth = 300, minWidth = 300, 
+               #                           maxHeight = 300,
+              #                            autoPan = TRUE,
+              #                            keepInView = TRUE,
+              #                            closeOnClick = TRUE,
+              #                            autoPanPaddingTopLeft = c(120, 20),
+              #                            autoPanPaddingBottomRight = c(150,20)),
+              highlightOptions = highlightOptions( # Highlight interaction for mouse hover
+                weight = 3,
+                color = "yellow",
+                bringToFront = T)) %>%
+  addLegend("bottomright", pal = palette1, values = regions$Wells_ActiveTotal,
+            title = "Active Wells", na.label = "Extirpated",
+            opacity = 1) 
+
+
+```
+
+## Static Map 
+
+```{r,  map, echo = FALSE, results = "hide"}
+
 # Map 1: concervation concern
 rmap <- ggplot(regions) +
   geom_sf(data = bc_bound(), fill = NA, color = "grey", size = 0.2) +
@@ -165,35 +255,27 @@ rmap <- ggplot(regions) +
   theme_minimal() +
   theme(legend.position = c(0.1, 0.35))
 
-rmap
-
-
-
-
-
 ```
 
-Provincial Groundwater Observation Well Network (PGOWN) summary, by FLNRO boundaries, of the % of wells with water level data that has not been validated within the past 7 months and the average age (months) since the water level data has been validated. The target is validated data no greater than 7 months of age.
 
-
-# create a table 
-
-
-
-
-
-# create a leaflet map 
-
+```{r, echo = FALSE}
+rmap
+```
 
 
 ## Caveats 
 
 *This assessment was completed February 4 and 5, 2019 and is current as of this date.
 
-## Method: All active PGOWN wells publicly available on the [PGOWN Interactive Map](https://governmentofbc.maps.arcgis.com/apps/webappviewer/index.html?id=b53cb0bf3f6848e79d66ffd09b74f00d) are assessed on a region-by-region basis. The water level data is downloaded for each well and the last month that the data is categorized as validated, is noted. For each region, the % of wells in that region with validated data greater than 7 months old is determined. For each region, the average age of data is determined based on the number of wells displayed on the interactive map at the time of the snapshot and the total age (in months) of the validated data.
+### Method: 
+All active PGOWN wells publicly available on the [PGOWN Interactive Map](https://governmentofbc.maps.arcgis.com/apps/webappviewer/index.html?id=b53cb0bf3f6848e79d66ffd09b74f00d) are assessed on a region-by-region basis. The water level data is downloaded for each well and the last month that the data is categorized as validated, is noted. For each region, the % of wells in that region with validated data greater than 7 months old is determined. For each region, the average age of data is determined based on the number of wells displayed on the interactive map at the time of the snapshot and the total age (in months) of the validated data.
+
 *The number of active wells displayed on the interactive map may change from year to year as wells are added / removed from PGOWN (i.e. it is not static)
+
 *This review checks the frequency of publicly available data validation, quality of systems operations (Aquarius Database / PGOWN Interactive Map) and communications, frequency of site visits, and overall efficiency of network protocols that have been implemented. This review and report can be used as one of several metrics for overall workload of PGOWN staff.
+
 *Sites may show as ‘active’ on the map when they are inactive (no longer collecting data), new monitoring sites collecting data may not be displayed on the map at the time of the snapshot assessment.
+
 *The focus of this ‘snapshot’ is on publicly available validated groundwater level data. The monitoring sites equipped with properly working satellite telemetry equipment should still be transmitting near real time unvalidated data.
 
 
