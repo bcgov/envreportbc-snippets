@@ -39,11 +39,12 @@ wdata_0219 <- read_excel(wfile, sheet = "Feb 2019", range = "A2:J228",
   select(-c("foo", "foo1")) %>%
   mutate(Region = ifelse(str_detect(Region, "%"),NA ,Region),
          Region = ifelse(str_detect(Region, "Total"),NA ,Region),
-         initial_cost = as.numeric(initial_cost)) %>%
+         initial_cost = as.numeric(initial_cost),
+         Well_ID = as.integer(gsub("^#", "", Well_ID))) %>%
   fill(Region) %>%
   filter_at(.vars = vars(Data_graded, Well_ID), .vars_predicate = any_vars(!is.na(.))) %>%
   mutate(report_data = "2019-02-01",
-        dateCheck = round(interval(ymd(wdata_0219$Date_Validated),
+        dateCheck = round(interval(ymd(Date_Validated),
                                          ymd("2019-02-01"))/ months(1), 0))
 
 
@@ -56,11 +57,12 @@ wdata_0718 <- read_excel(wfile, sheet = "July 2018", range = "A2:J219",
   select(-c("foo", "foo1")) %>%
   mutate(Region = ifelse(str_detect(Region, "%"),NA , Region),
          Region = ifelse(str_detect(Region, "Total"),NA ,Region),
-         initial_cost = as.numeric(initial_cost)) %>%
+         initial_cost = as.numeric(initial_cost),
+         Well_ID = as.integer(gsub("^#", "", Well_ID))) %>%
   fill(Region) %>%
   filter_at(.vars = vars(Data_graded, Well_ID), .vars_predicate = any_vars(!is.na(.))) %>%
   mutate(report_data = "2018-07-01",
-         dateCheck = round(interval(ymd(wdata_0718$Date_Validated),
+         dateCheck = round(interval(ymd(Date_Validated),
                                     ymd("2018-07-01"))/ months(1), 0))
 
 
@@ -68,16 +70,21 @@ bind_rows(wdata_0219,wdata_0718 )
 
 
 # import well dataset from the data catalogue ( )
-wells <- bcdc_get_data("e4731a85-ffca-4112-8caf-cb0a96905778")
 
+# get wells column names
+bcdc_describe_feature("e4731a85-ffca-4112-8caf-cb0a96905778")
 
-well1 <- wells[wells$WELL_TAG_NUMBER == 119,]
+# Get the wells which have an OBSERVATION_WELL_NUMBER (and thus are part of PGOWN)
+wells <- bcdc_query_geodata("e4731a85-ffca-4112-8caf-cb0a96905778") %>%
+  filter(!is.na(OBSERVATION_WELL_NUMBER)) %>%
+  select(WELL_LOCATION, OBSERVATION_WELL_NUMBER, MINISTRY_OBSERVATION_WELL_STAT,
+         WELL_DETAIL_URL) %>%
+  collect()
 
-mapview::mapview(well1)
+wells_joined <- right_join(wells, wdata_0219,
+                          by = c("OBSERVATION_WELL_NUMBER" = "Well_ID"))
 
-mapview::mapview(wells)
-
-
+mapview::mapview(wells_joined, zcol = "dateCheck")
 
 # export the R objects.
 
