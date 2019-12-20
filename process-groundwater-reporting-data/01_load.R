@@ -106,4 +106,5 @@ wells_regions <- st_union(wells_joined) %>%
   st_intersection(bc) %>%
   mutate()
 
-mapview(wells_regions, zcol = "Region") + mapview(wells_joined, zcol = "Region")
+mapview(wells_regions, zcol = "Region") +
+  mapview(wells_joined, zcol = "Region", legend = FALSE)
