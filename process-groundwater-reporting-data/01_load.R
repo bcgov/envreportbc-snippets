@@ -84,7 +84,7 @@ wells <- bcdc_query_geodata("e4731a85-ffca-4112-8caf-cb0a96905778") %>%
 wells_joined <- right_join(wells, wdata_0219,
                           by = c("OBSERVATION_WELL_NUMBER" = "Well_ID"))
 
-mapview::mapview(wells_joined, zcol = "dateCheck")
+library(mapview)
 
 # export the R objects.
 
@@ -92,6 +92,18 @@ if (!dir.exists("tmp")) dir.create("tmp")
 
 save(list = ls(), file = "tmp/welldata.RData")
 
+bc <- bcmaps::bc_bound()
 
+# Create regions based on voronoi tessalation around well locations, grouped by
+# 'Region' attribute and merged
+wells_regions <- st_union(wells_joined) %>%
+  st_voronoi() %>%
+  st_sf() %>%
+  st_collection_extract("POLYGON") %>%
+  st_join(wells_joined[, "Region"]) %>%
+  group_by(Region) %>%
+  summarise() %>%
+  st_intersection(bc) %>%
+  mutate()
 
-
+mapview(wells_regions, zcol = "Region") + mapview(wells_joined, zcol = "Region")
