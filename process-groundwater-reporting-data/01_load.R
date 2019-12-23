@@ -20,6 +20,8 @@ library(stringr)
 library(lubridate)
 library(gridExtra)
 library(bcdata)
+library(sf)
+library(mapview)
 
 
 wfile <- file.path("process-groundwater-reporting-data/data",
@@ -30,7 +32,8 @@ wfile <- file.path("process-groundwater-reporting-data/data",
 #  "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx"
 #)
 
-# feb 2019
+# Read in the data from Excel sheet using feb 2019 as base
+
 wdata_0219 <- read_excel(wfile, sheet = "Feb 2019", range = "A2:J228",
                     col_names = c("Region", "Data_graded", "Well_ID", "Location",
                                   "Date_Validated", "Months_since_val", "foo","initial_cost","foo1", "comment"),
@@ -47,6 +50,66 @@ wdata_0219 <- read_excel(wfile, sheet = "Feb 2019", range = "A2:J228",
         dateCheck = round(interval(ymd(Date_Validated),
                                          ymd("2019-02-01"))/ months(1), 0))
 
+# create a well_key for each time slice
+
+well_key <- wdata_0219 %>%
+  select(Region, Well_ID, Location)
+
+# write functions to format datasets
+
+get_well_data_graded = function(sheet, range, report_date) {
+  tdata <- read_excel(wfile, sheet = sheet, range = range,
+         col_names = c("Data_graded", "Well_ID", "Location",
+                "Date_Validated", "Months_since_val", "foo","initial_cost","foo1", "comment"),
+          col_types = c("text", "text","text", "date", "text",
+                "text", "text", "text","text")) %>%
+    select(c(Data_graded, Well_ID, Location, Date_Validated,
+                     initial_cost, comment))%>%
+    filter(!is.na(Well_ID)) %>%
+    mutate(initial_cost = as.numeric(initial_cost),
+           Well_ID = as.integer(gsub("^#", "", Well_ID))) %>%
+    filter_at(.vars = vars(Data_graded, Well_ID), .vars_predicate = any_vars(!is.na(.))) %>%
+    mutate(report_data = report_date,
+           dateCheck = round(interval(ymd(Date_Validated),
+                                      ymd(report_date))/ months(1), 0)) %>%
+    left_join(well_key)
+}
+
+wdata_0718 <- get_well_data_graded(sheet = "July 2018", range = "B2:J219", report_date = "2018-07-01")
+wdata_0719 <- get_well_data_graded(sheet = "July 2019 ", range = "E2:M236", report_date = "2019-07-01")
+
+
+get_well_data = function(sheet, range, report_date) {
+  tdata <- read_excel(wfile, sheet = sheet, range = range,
+                      col_names = c( "Well_ID", "Location",
+                                    "Date_Validated", "Months_since_val", "foo","initial_cost","foo1", "comment"),
+                      col_types = c("text","text", "date", "text",
+                                    "text", "text", "text","text")) %>%
+    select(c(Well_ID, Location, Date_Validated,
+             initial_cost, comment))%>%
+    filter(!is.na(Well_ID)) %>%
+    mutate(initial_cost = as.numeric(initial_cost),
+           Well_ID = as.integer(gsub("^#", "", Well_ID))) %>%
+    filter_at(.vars = vars(Well_ID), .vars_predicate = any_vars(!is.na(.))) %>%
+    mutate(report_data = report_date,
+           dateCheck = round(interval(ymd(Date_Validated),
+                                      ymd(report_date))/ months(1), 0)) %>%
+    left_join(well_key)
+}
+
+
+wdata_0218 <- get_well_data("Feb 2018", "B2:I214", "2018-02-01" )
+wdata_0717 <- get_well_data("July 2017", "B2:I207", "2017-07-01" )
+wdata_0217 <- get_well_data("Feb 2017", "B2:I198", "2017-02-01" )
+wdata_0716 <- get_well_data("July 2016", "B2:I192", "2016-07-01" )
+wdata_0316 <- get_well_data("March 2016", "B2:I193", "2016-03-01" )
+wdata_0715 <- get_well_data("July 2015", "B2:I193", "2015-07-01" )
+wdata_0215 <- get_well_data("Feb 2015", "B2:I168", "2015-02-01" )
+
+
+
+
+bind_rows(wdata_0219,wdata_0215)
 
 # July 2018
 wdata_0718 <- read_excel(wfile, sheet = "July 2018", range = "A2:J219",
