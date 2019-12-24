@@ -55,6 +55,7 @@ wdata_0219 <- read_excel(wfile, sheet = "Feb 2019", range = "A2:J228",
 well_key <- wdata_0219 %>%
   select(Region, Well_ID, Location)
 
+
 # write functions to format datasets
 
 get_well_data_graded = function(sheet, range, report_date) {
@@ -188,6 +189,6 @@ mapview(wells_regions, zcol = "Region") +
 
 # export the R objects.
 
-if (!dir.exists("tmp")) dir.create("tmp")
+if (!dir.exists("process-groundwater-reporting-data/tmp")) dir.create("process-groundwater-reporting-data/tmp")
 save(list = ls(), file = "tmp/welldata.RData")
 
