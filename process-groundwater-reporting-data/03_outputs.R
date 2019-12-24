@@ -26,7 +26,7 @@ library(gridExtra)
 
 
 
-
+# Regional plots and summary:
 # percent of wells validated within the prvious 7 months
 # note inverted number
 
@@ -38,7 +38,7 @@ reg_plot_list <- vector(length = length(reg_list), mode = "list")
 names(reg_plot_list) <- reg_list
 
 
-# Create plotting function
+# Create plotting function for regions
 
 temp_plots <- function(reg.data) {
   p1 <- ggplot(reg.data, aes(report_data, 100 - pc.gth.7)) +
@@ -67,15 +67,12 @@ plots <- for (n in reg_list) {
   p <- temp_plots(reg.data)
   name = gsub("/","_",n )
   ggsave(p, file = paste0("process-groundwater-reporting-data/output/plots/",name, "_temp.svg"))
-  #png_retina(filename = "process-groundwater-reporting-data/output/plots/",name, "_temp.png", width = 400, height = 700,
-  #           units = "px", type = "cairo-png", antialias = "default")
-  #plot(p)
-  #dev.off()
   reg_plot_list [[n]] <- p
 }
 
 
-# create overall summary with all data and years.
+
+## Plot 2 : create overall summary with all data and years.
 
 p1 <- ggplot(well.table, aes(report_data, 100 - pc.gth.7)) +
   geom_bar(stat = "identity") +

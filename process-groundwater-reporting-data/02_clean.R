@@ -58,5 +58,6 @@ well.table <- well.stats %>%
             mth.ave = mean(mth.ave, na.rm = TRUE)) %>%
   mutate(pc.gth.7 = no.gth.7/no.active.wells*100)
 
-save(well.table, file = "process-groundwater-reporting-data/tmp/well.table.rds")
+#save(well.table, file = "process-groundwater-reporting-data/tmp/well.table.rds")
 
+save(list = ls(), file = "process-groundwater-reporting-data/tmp/wellsum.RData")

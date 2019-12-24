@@ -183,12 +183,12 @@ wells_regions <- st_union(wells_joined) %>%
   st_intersection(bc) %>%
   mutate()
 
-mapview(wells_regions, zcol = "Region") +
-  mapview(wells_joined, zcol = "Region", legend = FALSE)
+#mapview(wells_regions, zcol = "Region") +
+#  mapview(wells_joined, zcol = "Region", legend = FALSE)
 
 
 # export the R objects.
 
 if (!dir.exists("process-groundwater-reporting-data/tmp")) dir.create("process-groundwater-reporting-data/tmp")
-save(list = ls(), file = "tmp/welldata.RData")
+save(list = ls(), file = "process-groundwater-reporting-data/tmp/welldata.RData")
 
