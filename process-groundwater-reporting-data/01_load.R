@@ -114,6 +114,8 @@ wdata_0316 <- get_well_data("March 2016", "B2:I193", "2016-03-01" )
 wdata <- bind_rows(wdata, wdata_0218, wdata_0717,wdata_0217,
                    wdata_0716, wdata_0316)
 
+rm(wdata_0219, wdata_0218, wdata_0717,wdata_0217,
+   wdata_0716, wdata_0316,wdata_0719,wdata_0718 )
 
 # update missing "region" values
 
@@ -136,21 +138,16 @@ region_table <- tribble(
 wdata <- wdata %>%
   left_join(region_table) %>%
   mutate(Region = ifelse(is.na(Region), Region2, Region)) %>%
-  select(- Region2)
-
-
-wdata <- wdata %>%
+  select(- Region2) %>%
   group_by(Location) %>%
   mutate(Region = ifelse(is.na(Region), first(Region), Region )) %>%
-  ungroup()
-
+  ungroup() %>%
+  mutate(inactive = ifelse(is.na(Date_Validated), "Y","N"))
 
 # data checks
-with.region <- wdata %>% filter(!is.na(Region))
-
-no.region <- wdata %>% filter(is.na(Region))
-
-
+#inactive <- wdata %>% filter(inactive == "Y")
+#with.region <- wdata %>% filter(!is.na(Region))
+#no.region <- wdata %>% filter(is.na(Region))
 
 
 
@@ -170,7 +167,6 @@ wells <- bcdc_query_geodata("e4731a85-ffca-4112-8caf-cb0a96905778") %>%
 wells_joined <- right_join(wells, wdata ,
                           by = c("OBSERVATION_WELL_NUMBER" = "Well_ID"))
 
-library(mapview)
 
 bc <- bcmaps::bc_bound()
 
@@ -190,10 +186,8 @@ mapview(wells_regions, zcol = "Region") +
   mapview(wells_joined, zcol = "Region", legend = FALSE)
 
 
-
 # export the R objects.
 
 if (!dir.exists("tmp")) dir.create("tmp")
-
 save(list = ls(), file = "tmp/welldata.RData")
 
