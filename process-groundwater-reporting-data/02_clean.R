@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and limitations under the License.
 
 
-
 ## Load libraries
 library(readr) #load data from BC Data Catalogue
 library(readxl) #load xlsx files
@@ -22,10 +21,47 @@ library(stringr)
 library(lubridate)
 
 
-if (!exists("wdata")) load("tmp/welldata.rds")
+if (!exists("wells_regions")) load("tmp/welldata.RData")
 
 
+wells.df <- data.frame(wells_joined)
 
+# finacial start up cost
+well.cost <- wells.df %>%
+  group_by(Region, report_data) %>%
+  summarise(invest_cost = sum(initial_cost, na.rm = TRUE))
+
+# number of wells per regions over time.
+
+well.stats <- wells.df %>%
+  group_by(Region, report_data) %>%
+  filter(!inactive == "Y") %>%
+  summarise(no.active.wells = length(unique(WELL_ID)),
+            no.gth.7 = sum(dateCheck > 7, na.rm = TRUE),
+            mth.ave = mean(dateCheck, na.rm = TRUE),
+            mth.total = sum(dateCheck, na.rm = TRUE)) %>%
+  mutate (pc.gth.7 =(no.gth.7 / no.active.wells) * 100) %>%
+  mutate(report_data = ymd(report_data))
+
+
+well.stats$Region = factor(well.stats$Region, ordered = TRUE,
+                           levels = c("Skeena", "Ominca/Peace", "Okanagan/Kootenay","Cariboo/Thompson",
+                                      "Lower Mainland",  "Vancouver Island"))
+
+
+# format table
+well.table <- well.stats %>%
+  select(c(Region, report_data, no.active.wells, no.gth.7, pc.gth.7, mth.ave )) %>%
+  rename(Region = Region,
+         `Total Active Wells` = no.active.wells,
+         `% of well >7m` = pc.gth.7,
+         `Average age (months)` = mth.ave ) %>%
+  mutate(`% of well >7m` = round(`% of well >7m`,1) ,
+         `Average age (months)` = round(`Average age (months)`, 1))
+
+
+well.table <- well.table %>%
+  arrange(Region)
 
 
 
