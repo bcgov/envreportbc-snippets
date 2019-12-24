@@ -25,7 +25,7 @@ library(gridExtra)
 #	You may also have ideas on which colors should be used in the graphics? I simply chose the red/peach combo to highlight which columns to draw attention to. It may be misleading as red often means ‘non compliant’.
 
 
-well.stats
+
 
 # percent of wells validated within the prvious 7 months
 # note inverted number
@@ -60,7 +60,6 @@ temp_plots <- function(reg.data) {
 }
 
 
-
 # Create ggplot graph loop
 plots <- for (n in reg_list) {
   print(n)
@@ -74,4 +73,23 @@ plots <- for (n in reg_list) {
   #dev.off()
   reg_plot_list [[n]] <- p
 }
+
+
+# create overall summary with all data and years.
+
+p1 <- ggplot(well.table, aes(report_data, 100 - pc.gth.7)) +
+  geom_bar(stat = "identity") +
+  ylim(0,100) +
+  geom_text(aes(label=no.active.wells), vjust = -1) +
+  labs(title = "% Wells validated within 7 months",
+       x = "", y = "Percentage of active wells")
+
+p2 <-ggplot(well.table,  aes(report_data, mth.ave)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label= round(mth.ave, 0), vjust = -1))+
+  ylim(0, max(well.table$mth.ave + 0.1* max(well.table$mth.ave))) +
+  labs(title = "Average time since validation ",
+       x = "", y = "No. of months") +
+  geom_hline(yintercept=7, linetype="dashed", color = "red")
+p2
 
