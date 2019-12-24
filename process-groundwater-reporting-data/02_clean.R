@@ -41,27 +41,22 @@ well.stats <- wells.df %>%
             mth.ave = mean(dateCheck, na.rm = TRUE),
             mth.total = sum(dateCheck, na.rm = TRUE)) %>%
   mutate (pc.gth.7 =(no.gth.7 / no.active.wells) * 100) %>%
-  mutate(report_data = ymd(report_data))
+  mutate(report_data = ymd(report_data)) %>%
+  ungroup()
 
 
 well.stats$Region = factor(well.stats$Region, ordered = TRUE,
                            levels = c("Skeena", "Ominca/Peace", "Okanagan/Kootenay","Cariboo/Thompson",
                                       "Lower Mainland",  "Vancouver Island"))
 
-
 # format table
 well.table <- well.stats %>%
-  select(c(Region, report_data, no.active.wells, no.gth.7, pc.gth.7, mth.ave )) %>%
-  rename(Region = Region,
-         `Total Active Wells` = no.active.wells,
-         `% of well >7m` = pc.gth.7,
-         `Average age (months)` = mth.ave ) %>%
-  mutate(`% of well >7m` = round(`% of well >7m`,1) ,
-         `Average age (months)` = round(`Average age (months)`, 1))
+  select(c(report_data, no.active.wells, no.gth.7, pc.gth.7, mth.ave )) %>%
+  group_by(report_data) %>%
+  summarise(no.active.wells = sum(no.active.wells),
+            no.gth.7 = sum(no.gth.7),
+            mth.ave = mean(mth.ave, na.rm = TRUE)) %>%
+  mutate(pc.gth.7 = no.gth.7/no.active.wells*100)
 
-
-well.table <- well.table %>%
-  arrange(Region)
-
-
+save(well.table, file = "process-groundwater-reporting-data/tmp/well.table.rds")
 
