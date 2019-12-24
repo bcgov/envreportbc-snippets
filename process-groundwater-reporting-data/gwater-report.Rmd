@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 -->
 
-Provincial Groundwater Observation Well Network (PGOWN) summary, by FLNRO boundaries, of the % of wells with water level data that has not been validated within the past 7 months and the average age (months) since the water level data has been validated. The target is validated data no greater than 7 months of age.
+Provincial Groundwater Observation Well Network (PGOWN) summary, by natural resource sector common operating boundaries, of the % of wells with water level data that has not been validated within the past 7 months and the average age (months) since the water level data has been validated. The target is validated data no greater than 7 months of age.
 
 ```{r include = FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
@@ -35,159 +35,53 @@ library(tidyr)
 library(stringr)
 library(lubridate)
 library(gridExtra)
+library(here) 
+library(ggplot2)
+library(bcmaps)
+library(bcdata)
+library(sf)
+library(leaflet)
 
+#well.stats
+#wells_regions
+#wells_joined
+#well.table
 
-#wfile <- file.path("process-groundwater-reporting-data/data",
-#                   "MASTER_Metrics for Publicly Available PGOWN Validated #Data.xlsx")
+load("tmp/welldata.RData")
+load("tmp/wellsum.RData")
 
-
-#wfile <- file.path("data",
-#                   "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx")
-
-wfile <- file.path(
-  soe_path("Operations ORCS/Special Projects/Water Program/Groundwater Wells Reporting/Data"),
-  "MASTER_Metrics for Publicly Available PGOWN Validated Data.xlsx"
-)
-
-```
-
-```{r, echo = FALSE, interval= FALSE, warning = FALSE, results = "hide"}
-
-# format the most recent dataset 
-
-wdata <- read_excel(wfile, sheet = "Feb 2019", range = "A2:J228",
-                    col_names = c("Region", "Data_graded", "Well_ID", "Location",
-                                  "Date_Validated", "Months_since_val", "foo","initial_cost","foo1", "comment"),
-                    col_types = c("text", "text", "text","text", "date", "text",
-                                  "text", "text", "text","text")) %>%
-  select(-c("foo", "foo1")) %>%
-  mutate(Region = ifelse(str_detect(Region, "%"),NA ,Region),
-         Region = ifelse(str_detect(Region, "Total"),NA ,Region), 
-         initial_cost = as.numeric(initial_cost)) %>%
-  fill(Region) %>%
-  filter_at(.vars = vars(Data_graded, Well_ID), .vars_predicate = any_vars(!is.na(.)))
-
-# format dates calculate months since specified data. This currently calculates for three dates: 
-# today, Feb 2019 and July 2020.
-
-wdata <- wdata %>%
-  mutate(dateCheckToday = round(interval(ymd(wdata$Date_Validated),
-                                         ymd(Sys.Date()))/ months(1), 0),
-         dateCheckFeb19 = round(interval(ymd(wdata$Date_Validated),
-                                         ymd("2019-02-01"))/ months(1), 0),
-         dateCheckJuly20 = round(interval(ymd(wdata$Date_Validated),
-                                          ymd("2020-07-01"))/ months(1), 0))
-
-# calculate the summary stats per region -----------------------------
-
-# finacial start up cost
-well.cost <- wdata %>%
-  group_by(Region) %>% 
-  summarise(invest_cost = sum(initial_cost, na.rm = TRUE))
-
-# number of active wells and graded / not graded
-
-well.stats <- wdata %>% 
-  group_by(Region) %>%
-  count(Data_graded) %>%
-  filter(!is.na(Data_graded)) %>%
-  mutate(Data_graded = ifelse(Data_graded == "-", "Well_inactive", 
-                              ifelse(Data_graded == "N", "Wells_nograde", 
-                                     ifelse(Data_graded == "Y", "Wells_yesgrade", Data_graded)))) %>%
-  spread(., key = Data_graded, value = n,fill = 0) %>%
-  mutate(Wells_ActiveTotal = sum( Wells_nograde,Wells_yesgrade))
-
-well.stats <- left_join(well.stats, well.cost)
-
-# percent of wells not validate in the last seven months (currently using Feb 2019 date)
-well.time.stats <- wdata %>% 
-  group_by(Region) %>%
-  summarise(n_gt7 = sum(dateCheckFeb19 > 7, na.rm = TRUE),
-            m_ave = mean(dateCheckFeb19 , na.rm = TRUE), 
-            m_total = sum(dateCheckFeb19, na.rm = TRUE))  
- 
-well.stats <- left_join(well.stats, well.time.stats) 
-
-well.stats <- well.stats %>%
-  mutate (perc_gt7m =(n_gt7 / Wells_ActiveTotal) * 100 , 
-          per_grad= (Wells_yesgrade / Wells_ActiveTotal) * 100)
-        
-well.stats$Region = factor(well.stats$Region, ordered = TRUE, levels = c("Skeena", "Ominca/Peace", "Okanagan/Kootenay","Cariboo/Thompson", "Lower Mainland",  "Vancouver Island"))
-
-
-#write.csv(well.stats, file.path("process-groundwater-reporting-data/output/", "test.csv"))
-
-# format table 
-well.table <- well.stats %>%
-  select(c(Region, Wells_ActiveTotal, perc_gt7m, m_ave )) %>%
-  rename(Region = Region, 
-         `Total Active Wells` = Wells_ActiveTotal, 
-         `% of well >7m` = perc_gt7m, 
-         `Average age (months)` = m_ave) %>%
-  mutate(`% of well >7m` = round(`% of well >7m`,1) , 
-         `Average age (months)` = round(`Average age (months)`,1))
-
-
-well.table <- well.table %>%
-  arrange(Region)
+wells_regions <- st_transform(wells_regions, crs = 4326) # convert to lat/long
+wells_joined <- st_transform(wells_joined, crs = 4326) # convert to lat/long
 
 ```
 
 ```{r, include = TRUE, echo= FALSE}
+
 knitr::kable(well.table)
+
 ```
 
 
-```{r plots, include = FALSE, warning = FALSE}
-# make a pretty plot 
-library(ggplot2) 
-  
-# percent of wells validated within the prvious 7 months 
-# note inverted number 
-p1 <- ggplot(well.stats, aes(Region, 100 - perc_gt7m)) + 
-  geom_bar(stat = "identity") + 
-  coord_flip() + 
-  ylim(0,100) + 
-  labs(title = "Percentage of Wells validated within the previous 7 months", 
+```{r plots, include = TRUE, echo= FALSE, fig.align="center" }
+
+## Plot 2 : create overall summary with all data and years.
+
+p1 <- ggplot(well.table, aes(report_data, 100 - pc.gth.7)) +
+  geom_bar(stat = "identity") +
+  ylim(0,100) +
+  geom_text(aes(label=no.active.wells), vjust = -1) +
+  labs(title = "% Wells validated within 7 months",
        x = "", y = "Percentage of active wells")
 
-  
-p2 <-ggplot(well.stats, aes(Region, m_ave)) + 
-  geom_bar(stat = "identity") + 
-  coord_flip() + 
-  geom_text(aes(label= round(m_ave, 1), hjust = -1))+ 
-  ylim(0, max(well.stats$m_ave + 0.1*max(well.stats$m_ave))) + 
-  labs(title = "Average time since validation ", 
-       x = "", y = "month") + 
+p2 <-ggplot(well.table,  aes(report_data, mth.ave)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label= round(mth.ave, 0), vjust = -1))+
+  ylim(0, max(well.table$mth.ave + 0.1* max(well.table$mth.ave))) +
+  labs(title = "Average time since validation ",
+       x = "", y = "No. of months") +
   geom_hline(yintercept=7, linetype="dashed", color = "red")
 
-
-```
-
-```{r, echo = FALSE}
-library(gridExtra)
-grid.arrange(p1, p2, ncol=2)
-
-```
-
-```{r, set-upmap, echo = FALSE, results = "hide"}
-
-library(bcmaps)
-library(bcdata)
-library(sf)
-
-# read in the mapping base data	
-regions <- 	bcdc_get_data("fefa94a1-d959-46c4-9d29-bf144ca736e8") %>%
-   st_transform(4326) %>%
-  select(REGION_NAME) %>%
-  mutate(REGION_NAME = ifelse(REGION_NAME %in% c("Okanagan","Kootenay"),
-                              "Okanagan/Kootenay", 
-                              ifelse(REGION_NAME %in% c("Omineca", "Peace"),
-                                     "Ominca/Peace", 
-                                     ifelse(REGION_NAME %in% c("Cariboo", "Thompson"), "Cariboo/Thompson", REGION_NAME))), 
-         Region = REGION_NAME) 
-
-regions <- regions %>% left_join(well.stats)
+  grid.arrange(p1, p2, ncol=2)
 
 ```
 
@@ -196,48 +90,83 @@ Click on the maps below to explore the trends across the province.
 # {.tabset .tabset-fade}
 
 ##  Interactive map 
+
 ```{r, echo = FALSE}
-library(leaflet)
+ library(leaflet)
+ 
+ labs <- dplyr::select(wells_regions, Region)
+ st_geometry(labs) <- NULL
+ labs_wells <- dplyr::select(wells_joined, Location)
+ 
+ lab1 <- lapply(seq(nrow(labs)), function(i) {
+   paste0( '<b>', labs[i, "Region"],'</b>') 
+ })
 
-labs <- dplyr::select(regions, Region, Wells_ActiveTotal,invest_cost, per_grad)
-st_geometry(labs) <- NULL
-
-lab1 <- lapply(seq(nrow(labs)), function(i) {
-  paste0( '<b>', labs[i, "Region"], ', ',  
-          labs[i, "invest_cost"], '</b>') 
-})
-
-palette1 <- colorFactor(palette = 'viridis', regions$Wells_ActiveTotal, reverse = TRUE)
-
-
-watermap <- leaflet(width = "900px", height = "600px", 
-                    options = leafletOptions(minZoom = 5)) %>%  
-  addProviderTiles(providers$Stamen.Terrain, group = "Terrain") %>%
-  add_bc_home_button() %>%
-  set_bc_view()
-
+  lab2 <- lapply(seq(nrow(labs_wells)), function(i) {
+   paste0( '<b>', labs_wells[i, "inactive"],'</b>') 
+ }) 
+ 
+ 
+ palette1 <- colorFactor(palette = 'viridis', wells_regions$Region, reverse = TRUE)
+ palette2 <- colorFactor(palette = 'viridis', wells_joined$inactive)
+ 
+ watermap <- leaflet(width = "900px", height = "600px", 
+                     options = leafletOptions(minZoom = 5)) %>%  
+   addProviderTiles(providers$Stamen.Terrain, group = "Terrain") %>%
+   add_bc_home_button() %>%
+   set_bc_view()
+ 
+ 
+ # grizzmap %>% 
+ #    addPolygons(data = grizzdata_full,
+ #              stroke = T, weight = 1, color = "black", 
+ #              fillOpacity = 0.5, # Polygon fill
+ #              fillColor = ~palette3(grizzdata_full$threat_class),
+ #              popup = threat_popups,
+ #              popupOptions = popup_options,
+ #              group = "Overall Threat",
+ #              label = lapply(lab3, htmltools::HTML),
+ #              labelOptions = labelOptions(direction = "auto", textsize = "12px"),
+ #              highlightOptions = highlightOptions( 
+ #                weight = 3,
+ #                color = "yellow",
+ #                bringToFront = T))
+ 
+ 
 watermap %>% 
-  addPolygons(data = regions, group = "Conservation Status",
-              stroke = T, weight = 1, color = "black", # Add border to polygons
-              fillOpacity = 0.5, # Polygon fill
-              fillColor = ~palette1(regions$Wells_ActiveTotal),
-              label = lapply(lab1, htmltools::HTML),
-              labelOptions = labelOptions(direction = "auto", textsize = "12px"),
-              #popup = constatus_popup,
-              #popupOptions = popupOptions(maxWidth = 300, minWidth = 300, 
-               #                           maxHeight = 300,
-              #                            autoPan = TRUE,
-              #                            keepInView = TRUE,
-              #                            closeOnClick = TRUE,
-              #                            autoPanPaddingTopLeft = c(120, 20),
-              #                            autoPanPaddingBottomRight = c(150,20)),
-              highlightOptions = highlightOptions( # Highlight interaction for mouse hover
-                weight = 3,
-                color = "yellow",
-                bringToFront = T)) %>%
-  addLegend("bottomright", pal = palette1, values = regions$Wells_ActiveTotal,
-            title = "Active Wells", na.label = "Extirpated",
-            opacity = 1) 
+   addPolygons(data = wells_regions, 
+               stroke = T, weight = 1, color = "black", # Add border to polygons
+               fillOpacity = 0.9, # Polygon fill
+               fillColor = ~palette1(wells_regions$Region),
+               label = lapply(lab1, htmltools::HTML),
+               labelOptions = labelOptions(direction = "auto", textsize = "12px")) %>%
+   addCircles(data = wells_joined, radius = 8, 
+#               #popup = constatus_popup,
+               label = lapply(lab2, htmltools::HTML),
+              fillColor = ~palette2(wells_joined$inactive),
+               popupOptions = popupOptions(maxWidth = 300, minWidth = 300, 
+                                          maxHeight = 300,
+                                           autoPan = TRUE,
+                                           keepInView = TRUE,
+                                           closeOnClick = TRUE,
+                                           autoPanPaddingTopLeft = c(120, 20),
+                                           autoPanPaddingBottomRight = c(150,20)),
+               highlightOptions = highlightOptions( # Highlight interaction for mouse hover
+                 weight = 3,
+                 color = "yellow",
+                 bringToFront = T)) 
+
+#addCircles(map, lng = NULL, lat = NULL, radius = 10,
+#  layerId = NULL, group = NULL, stroke = TRUE, color = "#03F",
+#  weight = 5, opacity = 0.5, fill = TRUE, fillColor = color,
+#  fillOpacity = 0.2, dashArray = NULL, popup = NULL,
+#  popupOptions = NULL, label = NULL, labelOptions = NULL,
+#  options = pathOptions(), highlightOptions = NULL,
+#  data = getMapData(map))
+
+#   addLegend("bottomright", pal = palette1, values = regions$Wells_ActiveTotal,
+#             title = "Active Wells", na.label = "Extirpated",
+#             opacity = 1) 
 
 
 ```
@@ -246,20 +175,11 @@ watermap %>%
 
 ```{r,  map, echo = FALSE, results = "hide"}
 
-# Map 1: concervation concern
-rmap <- ggplot(regions) +
-  geom_sf(data = bc_bound(), fill = NA, color = "grey", size = 0.2) +
-  geom_sf(aes(fill = Region), alpha = 0.8) +
-  coord_sf(datum = NA) + 
-#  labs(fill = "Regions") +
-  theme_minimal() +
-  theme(legend.position = c(0.1, 0.35))
-
 ```
 
 
 ```{r, echo = FALSE}
-rmap
+
 ```
 
 
