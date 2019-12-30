@@ -25,6 +25,9 @@ if (!exists("wells_regions")) load("tmp/welldata.RData")
 
 
 wells.df <- data.frame(wells_joined)
+wells.df <- wells.df %>%
+  mutate( Region = gsub("/","_", Region))
+
 
 # finacial start up cost
 well.cost <- wells.df %>%
@@ -46,7 +49,7 @@ well.stats <- wells.df %>%
 
 
 well.stats$Region = factor(well.stats$Region, ordered = TRUE,
-                           levels = c("Skeena", "Ominca/Peace", "Okanagan/Kootenay","Cariboo/Thompson",
+                           levels = c("Skeena", "Ominca_Peace", "Okanagan_Kootenay","Cariboo_Thompson",
                                       "Lower Mainland",  "Vancouver Island"))
 
 # format table - most recent year
