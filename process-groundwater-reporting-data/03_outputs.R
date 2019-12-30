@@ -65,8 +65,8 @@ plots <- for (n in reg_list) {
   print(n)
   reg.data <- well.stats %>% filter(Region == n)
   p <- temp_plots(reg.data)
-  name = gsub("/","_",n )
-  ggsave(p, file = paste0("process-groundwater-reporting-data/output/plots/",name, "_temp.svg"))
+  #name = gsub("/","_",n )
+  ggsave(p, file = paste0("process-groundwater-reporting-data/output/plots/",n, ".svg"))
   reg_plot_list [[n]] <- p
 }
 
