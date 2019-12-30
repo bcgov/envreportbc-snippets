@@ -42,10 +42,6 @@ library(bcdata)
 library(sf)
 library(leaflet)
 
-#well.stats
-#wells_regions
-#wells_joined
-#well.table
 
 load("tmp/welldata.RData")
 load("tmp/wellsum.RData")
@@ -55,9 +51,22 @@ wells_joined <- st_transform(wells_joined, crs = 4326) # convert to lat/long
 
 ```
 
-```{r, include = TRUE, echo= FALSE}
 
-knitr::kable(well.table)
+```{r, include = TRUE, echo= FALSE}
+caption = paste0("Table 1: Regional PGOWN validation (", reporting_date, ")")
+well.table.recent <- well.table.recent %>% select(-report_data)
+
+knitr::kable(well.table.recent,
+             caption = caption)
+
+```
+
+
+
+```{r, include = TRUE, echo= FALSE}
+caption2 = paste0("Table 2: PGOWN validation (", min(well.table$report_data), " - ", max(well.table$report_data))
+
+knitr::kable(well.table, caption = caption2)
 
 ```
 
@@ -96,7 +105,7 @@ Click on the maps below to explore the trends across the province.
  
  labs <- dplyr::select(wells_regions, Region)
  st_geometry(labs) <- NULL
- labs_wells <- dplyr::select(wells_joined, Location)
+ labs_wells <- dplyr::select(wells_joined, Location, inactive)
  
  lab1 <- lapply(seq(nrow(labs)), function(i) {
    paste0( '<b>', labs[i, "Region"],'</b>') 
