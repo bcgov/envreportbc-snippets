@@ -37,11 +37,11 @@ well.stats <- wells.df %>%
   group_by(Region, report_data) %>%
   filter(!inactive == "Y") %>%
   summarise(no.active.wells = length(unique(WELL_ID)),
-            no.gth.7 = sum(dateCheck > 7, na.rm = TRUE),
-            mth.ave = mean(dateCheck, na.rm = TRUE),
-            mth.total = sum(dateCheck, na.rm = TRUE)) %>%
-  mutate (pc.gth.7 =(no.gth.7 / no.active.wells) * 100) %>%
-  mutate(report_data = ymd(report_data)) %>%
+            no.gth.7 = round(sum(dateCheck > 7, na.rm = TRUE), 1),
+            mth.ave = round(mean(dateCheck, na.rm = TRUE), 1),
+            mth.total = round(sum(dateCheck, na.rm = TRUE), 1)) %>%
+  mutate(pc.gth.7 = round(no.gth.7 / no.active.wells * 100, 1),
+         report_data = ymd(report_data)) %>%
   ungroup()
 
 
@@ -49,14 +49,22 @@ well.stats$Region = factor(well.stats$Region, ordered = TRUE,
                            levels = c("Skeena", "Ominca/Peace", "Okanagan/Kootenay","Cariboo/Thompson",
                                       "Lower Mainland",  "Vancouver Island"))
 
-# format table
+# format table - most recent year
+well.table.recent <- well.stats %>%
+  filter(report_data == max(report_data)) %>%
+  select(c(Region, report_data, no.active.wells, no.gth.7, pc.gth.7, mth.ave))
+
+
+reporting_date = max(well.stats$report_data)
+
+# format table - all years
 well.table <- well.stats %>%
   select(c(report_data, no.active.wells, no.gth.7, pc.gth.7, mth.ave )) %>%
   group_by(report_data) %>%
   summarise(no.active.wells = sum(no.active.wells),
-            no.gth.7 = sum(no.gth.7),
-            mth.ave = mean(mth.ave, na.rm = TRUE)) %>%
-  mutate(pc.gth.7 = no.gth.7/no.active.wells*100)
+            no.gth.7 = round(sum(no.gth.7), 1),
+            mth.ave = round(mean(mth.ave, na.rm = TRUE),1)) %>%
+  mutate(pc.gth.7 = round(no.gth.7/no.active.wells*100, 1))
 
 #save(well.table, file = "process-groundwater-reporting-data/tmp/well.table.rds")
 
