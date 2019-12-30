@@ -64,7 +64,7 @@ get_well_data_graded = function(sheet, range, report_date) {
                 "Date_Validated", "Months_since_val", "foo","initial_cost","foo1", "comment"),
           col_types = c("text", "text","text", "date", "text",
                 "text", "text", "text","text")) %>%
-    select(c(Data_graded, Well_ID, Location, Date_Validated,
+    select(c(Data_graded, Well_ID, Location, Date_Validated, Months_since_val,
                      initial_cost, comment))%>%
     filter(!is.na(Well_ID)) %>%
     mutate(initial_cost = as.numeric(initial_cost),
@@ -88,7 +88,7 @@ get_well_data = function(sheet, range, report_date) {
                                     "Date_Validated", "Months_since_val", "foo","initial_cost","foo1", "comment"),
                       col_types = c("text","text", "date", "text",
                                     "text", "text", "text","text")) %>%
-    select(c(Well_ID, Location, Date_Validated,
+    select(c(Well_ID, Location, Date_Validated,Months_since_val,
              initial_cost, comment))%>%
     filter(!is.na(Well_ID)) %>%
     mutate(initial_cost = as.numeric(initial_cost),
