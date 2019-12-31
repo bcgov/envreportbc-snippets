@@ -29,6 +29,14 @@ wells.df <- wells.df %>%
   mutate( Region = gsub("/","_", Region))
 
 
+well.detailed <- wells_joined %>%
+  select(c(OBSERVATION_WELL_NUMBER, WHEN_CREATED,
+           WELL_DETAIL_URL, geometry, Region, Location, Date_Validated, Months_since_val,
+           initial_cost, comment, report_data , dateCheck,inactive)) %>%
+  mutate(well.name = paste0("w_", OBSERVATION_WELL_NUMBER),
+         report_data = ymd(report_data))
+
+
 # finacial start up cost
 well.cost <- wells.df %>%
   group_by(Region, report_data) %>%
