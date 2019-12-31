@@ -26,9 +26,7 @@ library(gridExtra)
 
 
 
-# Regional plots and summary:
-# percent of wells validated within the prvious 7 months
-# note inverted number
+# Regional Plots  ---------------------------------------------------------
 
 # Create list of GBPU
 reg_list <- unique(well.stats$Region)
@@ -71,7 +69,6 @@ plots <- for (n in reg_list) {
 }
 
 
-
 ## Plot 2 : create overall summary with all data and years.
 
 p1 <- ggplot(well.table, aes(report_data, 100 - pc.gth.7)) +
@@ -89,4 +86,40 @@ p2 <-ggplot(well.table,  aes(report_data, mth.ave)) +
        x = "", y = "No. of months") +
   geom_hline(yintercept=7, linetype="dashed", color = "red")
 p2
+
+
+
+# Indiviual plots per well ---------------------------------------------------------
+
+# Create list of wells
+wells_list <- unique(well.detailed$well.name)
+
+# Create list for plots
+wells_plot_list <- vector(length = length(wells_list), mode = "list")
+names(wells_plot_list) <- wells_list
+
+
+indiv_plots <- function(wellid.data) {
+  p2 <-ggplot(wellid.data, aes(report_data, dateCheck)) +
+    geom_bar(stat = "identity") +
+    #geom_text(aes(label= round(mth.ave, 0), vjust = -1))+
+    ylim(0, max(wellid.data$dateCheck + 0.1* max(wellid.data$dateCheck))) +
+    labs(title = paste0( "Validation :", wellid.data$Location ),
+         x = "", y = "Months") +
+    geom_hline(yintercept=7, linetype="dashed", color = "red")
+}
+
+
+# Create ggplot graph loop
+plots <- for (w in wells_list) {
+  print(w)
+  wellid.data <- well.detailed %>% filter(well.name == w) %>%
+    select(c(Region, Location, Date_Validated,  Months_since_val, initial_cost, comment,
+           report_data, inactive, dateCheck, well.name))
+
+  p <- indiv_plots(wellid.data)
+
+  ggsave(p, file = paste0("process-groundwater-reporting-data/output/plots/",w, ".svg"))
+  wells_plot_list [[w]] <- p
+}
 
