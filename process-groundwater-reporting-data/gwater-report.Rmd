@@ -121,9 +121,14 @@ Click on the maps below to explore the trends across the province.
 
 popup_reg <-  paste0("<img src = ", 
                         paste0("output/plots/", 
-                               gsub("\\s+", "%20", well.table.recent$Region), "_temp.svg"), 
+                               gsub("\\s+", "%20", well.table.recent$Region), ".svg"), 
                         ">")
 
+
+popup_indiv <-  paste0("<img src = ", 
+                        paste0("output/plots/", 
+                               gsub("\\s+", "%20", well.detailed$well.name), ".svg"), 
+                        ">")
   
  
  palette1 <- colorFactor(palette = 'viridis', wells_regions$Region, reverse = TRUE)
@@ -142,7 +147,7 @@ watermap %>%
                fillColor = ~palette1(wells_regions$Region),
                label = lapply(lab1, htmltools::HTML),
                popup = popup_reg,
-              popupOptions = popupOptions(maxWidth = 400, minWidth = 400, 
+               popupOptions = popupOptions(maxWidth = 400, minWidth = 400, 
                                           maxHeight = 800,
                                            autoPan = TRUE,
                                            keepInView = TRUE,
@@ -151,8 +156,16 @@ watermap %>%
                                            autoPanPaddingBottomRight = c(150,20)),
                labelOptions = labelOptions(direction = "auto", textsize = "12px")) %>%
    addCircles(data = wells_joined, radius = 8, 
-               #popup = popup_reg,
+               popup = popup_indiv,
                label = lapply(lab2, htmltools::HTML),
+               popupOptions = popupOptions(maxWidth = 400, minWidth = 400, 
+                                          maxHeight = 400,
+                                           autoPan = TRUE,
+                                           keepInView = TRUE,
+                                           closeOnClick = TRUE,
+                                           autoPanPaddingTopLeft = c(120, 20),
+                                           autoPanPaddingBottomRight = c(150,20)),
+      
                #fillColor = ~palette2(wells_joined$inactive),
                highlightOptions = highlightOptions( 
                  weight = 3,
