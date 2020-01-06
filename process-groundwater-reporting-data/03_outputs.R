@@ -124,3 +124,5 @@ plots <- for (w in wells_list) {
   wells_plot_list [[w]] <- p
 }
 
+saveRDS(reg_plot_list, "process-groundwater-reporting-data/reg_plot_list.rds")
+saveRDS(wells_plot_list, "process-groundwater-reporting-data/wells_plot_list.rds")
