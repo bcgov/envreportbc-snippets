@@ -24,6 +24,7 @@ library(gridExtra)
 #	Because of the # of wells that are reported, the default was to report the average for each region. However, this meant that some wells that were months and months past the target could be masked in an average if the other wells had relatively new data. The response to address this situation was to also report % of wells in a given area that were past the target.
 #	You may also have ideas on which colors should be used in the graphics? I simply chose the red/peach combo to highlight which columns to draw attention to. It may be misleading as red often means ‘non compliant’.
 
+dir.create("process-groundwater-reporting-data/output/plots", recursive = TRUE, showWarnings = FALSE)
 
 
 # Regional Plots  ---------------------------------------------------------
