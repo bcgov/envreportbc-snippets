@@ -106,17 +106,15 @@ wdata_0717 <- get_well_data("July 2017", "B2:I207", "2017-07-01" )
 wdata_0217 <- get_well_data("Feb 2017", "B2:I198", "2017-02-01" )
 wdata_0716 <- get_well_data("July 2016", "B2:I192", "2016-07-01" )
 wdata_0316 <- get_well_data("March 2016", "B2:I193", "2016-03-01" )
-
-# remove 2015 datasets
-#wdata_0715 <- get_well_data("July 2015", "B2:I193", "2015-07-01" )
-#wdata_0215 <- get_well_data("Feb 2015", "B2:I168", "2015-02-01" )
+wdata_0715 <- get_well_data("July 2015", "B2:I193", "2015-07-01" )
+wdata_0215 <- get_well_data("Feb 2015", "B2:I168", "2015-02-01" )
 
 
 wdata <- bind_rows(wdata, wdata_0218, wdata_0717,wdata_0217,
-                   wdata_0716, wdata_0316)
+                   wdata_0716, wdata_0316, wdata_0215, wdata_0715)
 
 rm(wdata_0219, wdata_0218, wdata_0717,wdata_0217,
-   wdata_0716, wdata_0316,wdata_0719,wdata_0718 )
+   wdata_0716, wdata_0316,wdata_0719,wdata_0718, wdata_0215, wdata_0715)
 
 # update missing "region" values
 
