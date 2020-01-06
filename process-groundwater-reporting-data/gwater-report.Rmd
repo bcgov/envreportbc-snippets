@@ -42,6 +42,7 @@ library(bcdata)
 library(sf)
 library(leaflet)
 library(leafpop)
+library(patchwork)
 
 
 load("tmp/welldata.RData")

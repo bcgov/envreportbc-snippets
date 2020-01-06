@@ -13,6 +13,7 @@
 library(ggplot2)
 library(dplyr)
 library(gridExtra)
+library(patchwork)
 
 
 #	The change in validated data over time with the presence of a dedicated FTE
@@ -55,7 +56,7 @@ temp_plots <- function(reg.data) {
          x = "", y = "No. of months") +
     geom_hline(yintercept=7, linetype="dashed", color = "red")
 
-  grid.arrange(p1, p2, ncol=1)
+  p1 / p2
 }
 
 
@@ -126,3 +127,4 @@ plots <- for (w in wells_list) {
 
 saveRDS(reg_plot_list, "process-groundwater-reporting-data/reg_plot_list.rds")
 saveRDS(wells_plot_list, "process-groundwater-reporting-data/wells_plot_list.rds")
+
