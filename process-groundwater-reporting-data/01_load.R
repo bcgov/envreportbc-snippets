@@ -137,11 +137,15 @@ region_table <- tribble(
 wdata <- wdata %>%
   left_join(region_table) %>%
   mutate(Region = ifelse(is.na(Region), Region2, Region)) %>%
-  select(- Region2) %>%
+  dplyr::select(- Region2) %>%
   group_by(Location) %>%
-  mutate(Region = ifelse(is.na(Region), first(Region), Region )) %>%
+  mutate(Region = ifelse(is.na(Region), first(Region), Region)) %>%
   ungroup() %>%
-  mutate(inactive = ifelse(is.na(Date_Validated), "Y","N"))
+  mutate(inactive = ifelse(is.na(Date_Validated), "Y","N"),
+         graded = ifelse(Data_graded %in% c("G","Y"), 1,
+                         ifelse(Data_graded %in% c("NG","N","sort of"), 0,
+                                ifelse(Data_graded %in% c("not available","-"), NA, Data_graded )))) %>%
+  dplyr::select(-(Data_graded))
 
 # data checks
 #inactive <- wdata %>% filter(inactive == "Y")
