@@ -42,16 +42,18 @@ well.cost <- wells.df %>%
   group_by(Region, report_data) %>%
   summarise(invest_cost = sum(initial_cost, na.rm = TRUE))
 
-# number of wells per regions over time.
 
-well.stats <- wells.df %>%
+# number of wells per regions over time.
+well.stats  <- wells.df %>%
   group_by(Region, report_data) %>%
   filter(!inactive == "Y") %>%
   summarise(no.active.wells = length(unique(WELL_ID)),
             no.gth.7 = round(sum(dateCheck > 7, na.rm = TRUE), 1),
             mth.ave = round(mean(dateCheck, na.rm = TRUE), 1),
-            mth.total = round(sum(dateCheck, na.rm = TRUE), 1)) %>%
+            mth.total = round(sum(dateCheck, na.rm = TRUE), 1),
+            no.grad = round(sum(as.numeric(graded), na.rm = TRUE))) %>%
   mutate(pc.gth.7 = round(no.gth.7 / no.active.wells * 100, 1),
+         pc.grad = round(no.grad / no.active.wells * 100, 1),
          report_data = ymd(report_data)) %>%
   ungroup()
 
