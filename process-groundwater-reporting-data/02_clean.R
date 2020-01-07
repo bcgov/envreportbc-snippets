@@ -65,19 +65,20 @@ well.stats$Region = factor(well.stats$Region, ordered = TRUE,
 # format table - most recent year
 well.table.recent <- well.stats %>%
   filter(report_data == max(report_data)) %>%
-  select(c(Region, report_data, no.active.wells, no.gth.7, pc.gth.7, mth.ave))
+  select(c(Region, report_data, no.active.wells, no.gth.7, pc.gth.7, mth.ave, no.grad, pc.grad ))
 
 
 reporting_date = max(well.stats$report_data)
 
 # format table - all years
 well.table <- well.stats %>%
-  select(c(report_data, no.active.wells, no.gth.7, pc.gth.7, mth.ave )) %>%
+  select(c(report_data, no.active.wells, no.gth.7, pc.gth.7, mth.ave, no.grad, pc.grad )) %>%
   group_by(report_data) %>%
   summarise(no.active.wells = sum(no.active.wells),
             no.gth.7 = round(sum(no.gth.7), 1),
-            mth.ave = round(mean(mth.ave, na.rm = TRUE),1)) %>%
-  mutate(pc.gth.7 = round(no.gth.7/no.active.wells*100, 1))
+            mth.ave = round(mean(mth.ave, na.rm = TRUE), 1),
+            pc.grad = round(mean(pc.grad, na.rm = TRUE), 0)) %>%
+  mutate(pc.gth.7 = round(no.gth.7/no.active.wells*100, 0))
 
 #save(well.table, file = "process-groundwater-reporting-data/tmp/well.table.rds")
 
