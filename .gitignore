@@ -6,4 +6,3 @@
 .DS_Store
 process-air-data.Rproj
 *process-bcsee-data/out
-*process-groundwater-reporting-data/data

@@ -13,6 +13,7 @@
 library(ggplot2)
 library(dplyr)
 library(gridExtra)
+library(patchwork)
 
 
 #	The change in validated data over time with the presence of a dedicated FTE
@@ -24,6 +25,7 @@ library(gridExtra)
 #	Because of the # of wells that are reported, the default was to report the average for each region. However, this meant that some wells that were months and months past the target could be masked in an average if the other wells had relatively new data. The response to address this situation was to also report % of wells in a given area that were past the target.
 #	You may also have ideas on which colors should be used in the graphics? I simply chose the red/peach combo to highlight which columns to draw attention to. It may be misleading as red often means ‘non compliant’.
 
+dir.create("process-groundwater-reporting-data/output/plots", recursive = TRUE, showWarnings = FALSE)
 
 
 # Regional Plots  ---------------------------------------------------------
@@ -54,7 +56,7 @@ temp_plots <- function(reg.data) {
          x = "", y = "No. of months") +
     geom_hline(yintercept=7, linetype="dashed", color = "red")
 
-  grid.arrange(p1, p2, ncol=1)
+  p1 / p2
 }
 
 
@@ -122,4 +124,7 @@ plots <- for (w in wells_list) {
   ggsave(p, file = paste0("process-groundwater-reporting-data/output/plots/",w, ".svg"))
   wells_plot_list [[w]] <- p
 }
+
+saveRDS(reg_plot_list, "process-groundwater-reporting-data/reg_plot_list.rds")
+saveRDS(wells_plot_list, "process-groundwater-reporting-data/wells_plot_list.rds")
 
