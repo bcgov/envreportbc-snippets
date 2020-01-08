@@ -28,6 +28,24 @@ library(patchwork)
 dir.create("process-groundwater-reporting-data/output/plots", recursive = TRUE, showWarnings = FALSE)
 
 
+# Create and overall plot
+
+well.stats
+
+ggplot(well.stats, aes(report_data, 100 - pc.gth.7,color = Region, fill = Region, shape = Region)) +
+  geom_point() + geom_line()+
+  ylim(0,100) +
+  labs(title = "% Wells validated within 7 months",
+       x = "", y = "Percentage of active wells")
+
+
+
+
+
+
+# Create Popup plots for report ------------------------------------------
+
+
 # Regional Plots  ---------------------------------------------------------
 
 # Create list of GBPU
@@ -36,7 +54,6 @@ reg_list <- unique(well.stats$Region)
 # Create list for plots
 reg_plot_list <- vector(length = length(reg_list), mode = "list")
 names(reg_plot_list) <- reg_list
-
 
 # Create plotting function for regions
 
@@ -87,8 +104,6 @@ p2 <-ggplot(well.table,  aes(report_data, mth.ave)) +
   labs(title = "Average time since validation ",
        x = "", y = "No. of months") +
   geom_hline(yintercept=7, linetype="dashed", color = "red")
-p2
-
 
 
 # Indiviual plots per well ---------------------------------------------------------
@@ -106,7 +121,7 @@ indiv_plots <- function(wellid.data) {
     geom_bar(stat = "identity") +
     #geom_text(aes(label= round(mth.ave, 0), vjust = -1))+
     ylim(0, max(wellid.data$dateCheck + 0.1* max(wellid.data$dateCheck))) +
-    labs(title = paste0( "Validation :", wellid.data$Location ),
+    labs(title = paste0( "Validation history : ", wellid.data$Location, " (#", wellid.data$OBSERVATION_WELL_NUMBER, ")"),
          x = "", y = "Months") +
     geom_hline(yintercept=7, linetype="dashed", color = "red")
 }
@@ -114,9 +129,10 @@ indiv_plots <- function(wellid.data) {
 
 # Create ggplot graph loop
 plots <- for (w in wells_list) {
+ # w = wells_list[1]
   print(w)
   wellid.data <- well.detailed %>% filter(well.name == w) %>%
-    select(c(Region, Location, Date_Validated,  Months_since_val, initial_cost, comment,
+    select(c(OBSERVATION_WELL_NUMBER, Region, Location, Date_Validated,  Months_since_val, initial_cost, comment,
            report_data, inactive, dateCheck, well.name))
 
   p <- indiv_plots(wellid.data)
