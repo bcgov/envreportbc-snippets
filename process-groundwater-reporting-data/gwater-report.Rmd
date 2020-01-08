@@ -79,7 +79,6 @@ knitr::kable(well.table, caption = caption2)
 ```{r plots, include = TRUE, echo= FALSE, fig.align="center" }
 
 ## Plot 2 : create overall summary with all data and years.
-
 p1 <- ggplot(well.table, aes(report_data, 100 - pc.gth.7)) +
   geom_bar(stat = "identity") +
   ylim(0,100) +
@@ -163,19 +162,18 @@ watermap %>%
                  closeOnClick = TRUE,
                  autoPanPaddingTopLeft = c(120, 20),
                  autoPanPaddingBottomRight = c(150,20)),
-      
-               #fillColor = ~palette2(wells_joined$inactive),
                highlightOptions = highlightOptions( 
                  weight = 3,
                  color = "yellow",
                  bringToFront = T)) 
-
 
 ```
 
 ## Blank Tab option 
 
 ```{r,  map, echo = FALSE, results = "hide"}
+
+print( "this is a blank tab option as a place holder")
 
 ```
 
