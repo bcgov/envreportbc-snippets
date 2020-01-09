@@ -59,7 +59,7 @@ well_key <- wdata_0219 %>%
 # write functions to format datasets
 
 get_well_data_graded = function(sheet, range, report_date) {
-  tdata <- read_excel(wfile, sheet = sheet, range = range,
+      tdata <- read_excel(wfile, sheet = sheet, range = range,
          col_names = c("Data_graded", "Well_ID", "Location",
                 "Date_Validated", "Months_since_val", "foo","initial_cost","foo1", "comment"),
           col_types = c("text", "text","text", "date", "text",
@@ -131,7 +131,15 @@ region_table <- tribble(
   "Junction Sheep", "Cariboo/Thompson",
   "Shuswamp Lake Park Deep", "Cariboo/Thompson",
   "Salmon Arm", "Cariboo/Thompson",
-  "Ellison", "Okanagan/Kootenay"
+  "Ellison", "Okanagan/Kootenay",
+  "Cordova Bay", "Vancouver Island",
+  "Fanny Bay", "Vancouver Island",
+  "Ft Langley", "Lower Mainland",
+  "Mt Newton", "Vancouver Island",
+  "Ootischenia", "Okanagan/Kootenay",
+  "Oyster River", "Vancouver Island",
+  "Shuswap","Cariboo/Thompson",
+  "Yarrow", "Lower Mainland",
 )
 
 wdata <- wdata %>%
@@ -151,7 +159,6 @@ wdata <- wdata %>%
 #inactive <- wdata %>% filter(inactive == "Y")
 #with.region <- wdata %>% filter(!is.na(Region))
 #no.region <- wdata %>% filter(is.na(Region))
-
 
 
 # import well dataset from the data catalogue ( )
@@ -185,8 +192,8 @@ wells_regions <- st_union(wells_joined) %>%
   st_intersection(bc) %>%
   mutate()
 
-#mapview(wells_regions, zcol = "Region") +
-#  mapview(wells_joined, zcol = "Region", legend = FALSE)
+mapview(wells_regions, zcol = "Region") +
+  mapview(wells_joined, zcol = "Region", legend = FALSE)
 
 
 # export the R objects.
