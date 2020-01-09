@@ -30,16 +30,30 @@ dir.create("process-groundwater-reporting-data/output/plots", recursive = TRUE, 
 
 # Create and overall plot
 
-well.stats
+x <- well.stats %>%
+  filter(is.na(Region))
 
+# plot with % wells validated
 ggplot(well.stats, aes(report_data, 100 - pc.gth.7,color = Region, fill = Region, shape = Region)) +
   geom_point() + geom_line()+
   ylim(0,100) +
   labs(title = "% Wells validated within 7 months",
        x = "", y = "Percentage of active wells")
 
+# amount of time since validates
+
+ggplot(well.stats, aes(report_data, mth.ave, color = Region, fill = Region, shape = Region)) +
+ geom_pointrange(aes(ymin = mth.ave - mth.sd , ymax = mth.ave + mth.sd )) +
+  geom_line() +
+  coord_cartesian(ylim = c(0,100))
 
 
+ggplot(well.stats, aes(report_data, mth.ave, color = Region, fill = Region, shape = Region)) +
+  facet_wrap(~Region, scales = "free")+
+  geom_pointrange(aes(ymin = mth.ave - mth.sd , ymax = mth.ave + mth.sd )) +
+  geom_line() +
+  #geom_text(aes(label=no.active.wells), vjust = -1) +
+  theme(legend.position = "none")
 
 
 
