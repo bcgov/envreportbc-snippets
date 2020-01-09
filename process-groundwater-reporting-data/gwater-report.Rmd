@@ -98,6 +98,37 @@ p2 <-ggplot(well.table,  aes(report_data, mth.ave)) +
 
 ```
 
+```{r months over time plot ,  include = TRUE, echo= FALSE, fig.align="center" , caption = "Average Months Since Validated with mean and standard deviation" }
+
+ggplot(well.stats, aes(report_data, mth.ave, color = Region, fill = Region, shape = Region)) +
+  facet_wrap(~Region, scales = "free")+
+  geom_pointrange(aes(ymin = mth.ave - mth.sd , ymax = mth.ave + mth.sd )) +
+  geom_line() +
+  #geom_text(aes(label=no.active.wells), vjust = -1) +
+  theme(legend.position = "none")
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Click on the maps below to explore the trends across the province.
 
 # {.tabset .tabset-fade}
