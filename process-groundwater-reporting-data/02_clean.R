@@ -50,6 +50,7 @@ well.stats  <- wells.df %>%
   summarise(no.active.wells = length(unique(WELL_ID)),
             no.gth.7 = round(sum(dateCheck > 7, na.rm = TRUE), 1),
             mth.ave = round(mean(dateCheck, na.rm = TRUE), 1),
+            mth.sd = round(sd(dateCheck, na.rm = TRUE), 1),
             mth.total = round(sum(dateCheck, na.rm = TRUE), 1),
             no.grad = round(sum(as.numeric(graded), na.rm = TRUE))) %>%
   mutate(pc.gth.7 = round(no.gth.7 / no.active.wells * 100, 1),
@@ -58,6 +59,8 @@ well.stats  <- wells.df %>%
   ungroup()
 
 
+unique(well.stats$Region)
+
 well.stats$Region = factor(well.stats$Region, ordered = TRUE,
                            levels = c("Skeena", "Ominca_Peace", "Okanagan_Kootenay","Cariboo_Thompson",
                                       "Lower Mainland",  "Vancouver Island"))
@@ -65,7 +68,7 @@ well.stats$Region = factor(well.stats$Region, ordered = TRUE,
 # format table - most recent year
 well.table.recent <- well.stats %>%
   filter(report_data == max(report_data)) %>%
-  select(c(Region, report_data, no.active.wells, no.gth.7, pc.gth.7, mth.ave, no.grad, pc.grad ))
+  select(c(Region, report_data, no.active.wells, no.gth.7, pc.gth.7, mth.ave,mth.sd, no.grad, pc.grad ))
 
 
 reporting_date = max(well.stats$report_data)
@@ -77,6 +80,7 @@ well.table <- well.stats %>%
   summarise(no.active.wells = sum(no.active.wells),
             no.gth.7 = round(sum(no.gth.7), 1),
             mth.ave = round(mean(mth.ave, na.rm = TRUE), 1),
+            #mth.sd = round(sd(mth.ave, na.rm = TRUE), 1),
             pc.grad = round(mean(pc.grad, na.rm = TRUE), 0)) %>%
   mutate(pc.gth.7 = round(no.gth.7/no.active.wells*100, 0))
 
