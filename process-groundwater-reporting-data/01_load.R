@@ -40,8 +40,8 @@ wdata_0219 <- read_excel(wfile, sheet = "Feb 2019", range = "A2:J228",
                     col_types = c("text", "text", "text","text", "date", "text",
                                   "text", "text", "text","text")) %>%
   select(-c("foo", "foo1")) %>%
-  mutate(Region = ifelse(str_detect(Region, "%"),NA ,Region),
-         Region = ifelse(str_detect(Region, "Total"),NA ,Region),
+  mutate(Region = ifelse(str_detect(Region, "%"),NA , Region),
+         Region = ifelse(str_detect(Region, "Total"),NA , Region),
          initial_cost = as.numeric(initial_cost),
          Well_ID = as.integer(gsub("^#", "", Well_ID))) %>%
   fill(Region) %>%
@@ -55,8 +55,33 @@ wdata_0219 <- read_excel(wfile, sheet = "Feb 2019", range = "A2:J228",
 well_key <- wdata_0219 %>%
   select(Region, Well_ID, Location)
 
+# function 1 to read in Feb 2020 sheets and beyond.
 
-# write functions to format datasets
+get_well_data_2020 = function(sheet, range, report_date) {
+  tdata <- read_excel(wfile, sheet = sheet, range = range,
+                      col_names = c("Data_graded", "FTE","inactive","Well_ID", "Location",
+                                    "Date_Validated", "Months_since_val", "foo","initial_cost","foo1", "comment"),
+                      col_types = c("text", "text", "text", "text","text", "date", "text",
+                                    "text", "text", "text","text")) %>%
+    select(c(Data_graded, FTE, inactive, Well_ID, Location, Date_Validated, Months_since_val,
+             initial_cost, comment)) %>%
+    mutate(FTE = ifelse(str_detect(FTE, "-"), NA , FTE)) %>%
+    fill(FTE) %>%
+    filter(!is.na(Well_ID)) %>%
+    mutate(initial_cost = as.numeric(initial_cost),
+           Well_ID = as.integer(gsub("^#", "", Well_ID))) %>%
+    filter_at(.vars = vars(Data_graded, Well_ID), .vars_predicate = any_vars(!is.na(.))) %>%
+    mutate(report_data = report_date,
+           dateCheck = round(interval(ymd(Date_Validated),
+                                      ymd(report_date))/ months(1), 0)) %>%
+    left_join(well_key)
+}
+
+
+wdata_0220 <- get_well_data_2020(sheet = "Feb 2020" , range = "E2:O237" , report_date = "2020-02-01")
+
+
+# functions to format datasets (July 2018- July 2019)
 
 get_well_data_graded = function(sheet, range, report_date) {
       tdata <- read_excel(wfile, sheet = sheet, range = range,
@@ -79,8 +104,9 @@ get_well_data_graded = function(sheet, range, report_date) {
 wdata_0718 <- get_well_data_graded(sheet = "July 2018", range = "B2:J219", report_date = "2018-07-01")
 wdata_0719 <- get_well_data_graded(sheet = "July 2019 ", range = "E2:M236", report_date = "2019-07-01")
 
-wdata <- bind_rows(wdata_0219, wdata_0718, wdata_0719)
+wdata <- bind_rows(wdata_0219, wdata_0718, wdata_0719, wdata_0220)
 
+# functions to format datasets (Feb 2015 - Feb 2018)
 
 get_well_data = function(sheet, range, report_date) {
   tdata <- read_excel(wfile, sheet = sheet, range = range,
@@ -159,6 +185,11 @@ wdata <- wdata %>%
 #inactive <- wdata %>% filter(inactive == "Y")
 #with.region <- wdata %>% filter(!is.na(Region))
 #no.region <- wdata %>% filter(is.na(Region))
+
+
+
+# Update the names of the Regions
+
 
 
 # import well dataset from the data catalogue ( )
