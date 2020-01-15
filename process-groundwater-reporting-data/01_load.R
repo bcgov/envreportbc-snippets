@@ -189,8 +189,9 @@ wdata <- wdata %>%
 
 
 # Update the names of the Regions
-
-
+wdata <- wdata %>%
+ mutate(Region = ifelse(Region == "Lower Mainland", "South Coast",
+                        ifelse(Region == "Vancouver Island" , "West Coast", Region)))
 
 # import well dataset from the data catalogue ( )
 
@@ -223,8 +224,8 @@ wells_regions <- st_union(wells_joined) %>%
   st_intersection(bc) %>%
   mutate()
 
-mapview(wells_regions, zcol = "Region") +
-  mapview(wells_joined, zcol = "Region", legend = FALSE)
+#mapview(wells_regions, zcol = "Region") +
+#  mapview(wells_joined, zcol = "Region", legend = FALSE)
 
 
 # export the R objects.
