@@ -121,39 +121,39 @@ p2 <-ggplot(well.table,  aes(report_data, mth.ave)) +
 
 
 # Indiviual plots per well ---------------------------------------------------------
-
-# Create list of wells
-wells_list <- unique(well.detailed$well.name)
-
-# Create list for plots
-wells_plot_list <- vector(length = length(wells_list), mode = "list")
-names(wells_plot_list) <- wells_list
-
-
-indiv_plots <- function(wellid.data) {
-  p2 <-ggplot(wellid.data, aes(report_data, dateCheck)) +
-    geom_bar(stat = "identity") +
-    #geom_text(aes(label= round(mth.ave, 0), vjust = -1))+
-    ylim(0, max(wellid.data$dateCheck + 0.1* max(wellid.data$dateCheck))) +
-    labs(title = paste0( "Validation history : ", wellid.data$Location, " (#", wellid.data$OBSERVATION_WELL_NUMBER, ")"),
-         x = "", y = "Months") +
-    geom_hline(yintercept=7, linetype="dashed", color = "red")
-}
-
-
-# Create ggplot graph loop
-plots <- for (w in wells_list) {
- # w = wells_list[1]
-  print(w)
-  wellid.data <- well.detailed %>% filter(well.name == w) %>%
-    select(c(OBSERVATION_WELL_NUMBER, Region, Location, Date_Validated,  Months_since_val, initial_cost, comment,
-           report_data, inactive, dateCheck, well.name))
-
-  p <- indiv_plots(wellid.data)
-
-  ggsave(p, file = paste0("process-groundwater-reporting-data/output/plots/",w, ".svg"))
-  wells_plot_list [[w]] <- p
-}
+#
+# # Create list of wells
+# wells_list <- unique(well.detailed$well.name)
+#
+# # Create list for plots
+# wells_plot_list <- vector(length = length(wells_list), mode = "list")
+# names(wells_plot_list) <- wells_list
+#
+#
+# indiv_plots <- function(wellid.data) {
+#   p2 <-ggplot(wellid.data, aes(report_data, dateCheck)) +
+#     geom_bar(stat = "identity") +
+#     #geom_text(aes(label= round(mth.ave, 0), vjust = -1))+
+#     ylim(0, max(wellid.data$dateCheck + 0.1* max(wellid.data$dateCheck))) +
+#     labs(title = paste0( "Validation history : ", wellid.data$Location, " (#", wellid.data$OBSERVATION_WELL_NUMBER, ")"),
+#          x = "", y = "Months") +
+#     geom_hline(yintercept=7, linetype="dashed", color = "red")
+# }
+#
+#
+# # Create ggplot graph loop
+# plots <- for (w in wells_list) {
+#  # w = wells_list[1]
+#   print(w)
+#   wellid.data <- well.detailed %>% filter(well.name == w) %>%
+#     select(c(OBSERVATION_WELL_NUMBER, Region, Location, Date_Validated,  Months_since_val, initial_cost, comment,
+#            report_data, inactive, dateCheck, well.name))
+#
+#   p <- indiv_plots(wellid.data)
+#
+#   ggsave(p, file = paste0("process-groundwater-reporting-data/output/plots/",w, ".svg"))
+#   wells_plot_list [[w]] <- p
+# }
 
 saveRDS(reg_plot_list, "process-groundwater-reporting-data/reg_plot_list.rds")
 saveRDS(wells_plot_list, "process-groundwater-reporting-data/wells_plot_list.rds")
