@@ -15,18 +15,7 @@ library(dplyr)
 library(gridExtra)
 library(patchwork)
 
-
-#	The change in validated data over time with the presence of a dedicated FTE
-#	The change in over time within a region and between regions and as a network as a whole (i.e. it was largely a mess in March 2016 compared to now re: age of data)
-#	The number of wells per region, the total # of wells
-#	Those regions who exceed the targets
-#	Those regions who meet the targets
-#	How old the unvalidated data is (the target is no greater than 7 months, some wells are nearing a year, historically some wells were multiple years
-#	Because of the # of wells that are reported, the default was to report the average for each region. However, this meant that some wells that were months and months past the target could be masked in an average if the other wells had relatively new data. The response to address this situation was to also report % of wells in a given area that were past the target.
-#	You may also have ideas on which colors should be used in the graphics? I simply chose the red/peach combo to highlight which columns to draw attention to. It may be misleading as red often means ‘non compliant’.
-
 dir.create("process-groundwater-reporting-data/output/plots", recursive = TRUE, showWarnings = FALSE)
-
 
 # Create and overall plot
 
@@ -89,6 +78,17 @@ temp_plots <- function(reg.data) {
 
   p1 / p2
 }
+
+
+ggplot(well.stats, aes(report_data, mth.ave, color = Region, fill = Region, shape = Region)) +
+  facet_wrap(~Region, scales = "free")+
+  geom_pointrange(aes(ymin = mth.ave - mth.sd , ymax = mth.ave + mth.sd )) +
+  geom_line() +
+  #geom_text(aes(label=no.active.wells), vjust = -1) +
+  theme(legend.position = "none")
+
+
+
 
 
 # Create ggplot graph loop
