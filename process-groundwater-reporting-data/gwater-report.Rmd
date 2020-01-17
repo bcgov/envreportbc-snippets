@@ -51,29 +51,14 @@ load("tmp/wellsum.RData")
 wells_regions <- st_transform(wells_regions, crs = 4326) # convert to lat/long
 wells_joined <- st_transform(wells_joined, crs = 4326) # convert to lat/long
 
-indiv_plot_list <- readRDS("wells_plot_list.rds")
+#indiv_plot_list <- readRDS("wells_plot_list.rds")
 reg_plot_list <- readRDS("reg_plot_list.rds")
 
 ```
 
+## Provincial summaries 
 
-```{r, include = TRUE, echo= FALSE}
-caption = paste0("Table 1: Regional PGOWN validation (", reporting_date, ")")
-well.table.recent <- well.table.recent %>% select(-report_data)
-
-knitr::kable(well.table.recent,
-             caption = caption)
-
-```
-
-
-
-```{r, include = TRUE, echo= FALSE}
-caption2 = paste0("Table 2: PGOWN validation (", min(well.table$report_data), " - ", max(well.table$report_data))
-
-knitr::kable(well.table, caption = caption2)
-
-```
+BLAH BLAH BLAH 
 
 
 ```{r plots, include = TRUE, echo= FALSE, fig.align="center" }
@@ -117,18 +102,6 @@ ggplot(well.stats, aes(report_data, mth.ave, color = Region, fill = Region, shap
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 Click on the maps below to explore the trends across the province.
 
 # {.tabset .tabset-fade}
@@ -156,8 +129,8 @@ Click on the maps below to explore the trends across the province.
   popup_reg <- popupGraph(reg_plot_list[well.stats$Region], 
                           type = "svg", width = 500, height = 500)
   
-  popup_indiv <- popupGraph(indiv_plot_list[well.detailed$well.name], 
-                            type = "svg", width = 500, height = 400)
+# popup_indiv <- popupGraph(indiv_plot_list[well.detailed$well.name], 
+#                            type = "svg", width = 500, height = 400)
 
  palette1 <- colorFactor(palette = 'viridis', wells_regions$Region, reverse = TRUE)
  palette2 <- colorFactor(palette = 'viridis', wells_joined$inactive)
@@ -184,15 +157,15 @@ watermap %>%
                  autoPanPaddingBottomRight = c(150,20)),
                labelOptions = labelOptions(direction = "auto", textsize = "12px")) %>%
    addCircles(data = wells_joined, radius = 10, 
-               popup = popup_indiv,
+               #popup = popup_indiv,
                label = lapply(lab2, htmltools::HTML),
-               popupOptions = popupOptions(
-                 maxWidth = "100%", 
-                 autoPan = TRUE,
-                 keepInView = TRUE,
-                 closeOnClick = TRUE,
-                 autoPanPaddingTopLeft = c(120, 20),
-                 autoPanPaddingBottomRight = c(150,20)),
+               #popupOptions = popupOptions(
+              #   maxWidth = "100%", 
+              #   autoPan = TRUE,
+              #   keepInView = TRUE,
+              #   closeOnClick = TRUE,
+              #   autoPanPaddingTopLeft = c(120, 20),
+              #   autoPanPaddingBottomRight = c(150,20)),
                highlightOptions = highlightOptions( 
                  weight = 3,
                  color = "yellow",
