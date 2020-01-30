@@ -193,17 +193,24 @@ wdata <- wdata %>%
  mutate(Region = ifelse(Region == "Lower Mainland", "South Coast",
                         ifelse(Region == "Vancouver Island" , "West Coast", Region)))
 
-# import well dataset from the data catalogue ( )
 
-# get wells column names
-bcdc_describe_feature("e4731a85-ffca-4112-8caf-cb0a96905778")
+## get wells column names
+#bcdc_describe_feature("e4731a85-ffca-4112-8caf-cb0a96905778")
 
 # Get the wells which have an OBSERVATION_WELL_NUMBER (and thus are part of PGOWN)
-wells <- bcdc_query_geodata("e4731a85-ffca-4112-8caf-cb0a96905778") %>%
-  filter(!is.na(OBSERVATION_WELL_NUMBER)) %>%
-  select(WELL_LOCATION, OBSERVATION_WELL_NUMBER, MINISTRY_OBSERVATION_WELL_STAT,
-         WELL_DETAIL_URL) %>%
-  collect()
+#wells <- bcdc_query_geodata("e4731a85-ffca-4112-8caf-cb0a96905778") %>%
+#  filter(!is.na(OBSERVATION_WELL_NUMBER)) %>%
+#  select(WELL_LOCATION, OBSERVATION_WELL_NUMBER, MINISTRY_OBSERVATION_WELL_STAT,
+#         WELL_DETAIL_URL) %>%
+#  collect()
+
+
+# Temporary fix while WMS is down
+
+wells <- read.csv
+
+
+
 
 
 wells_joined <- right_join(wells, wdata ,
