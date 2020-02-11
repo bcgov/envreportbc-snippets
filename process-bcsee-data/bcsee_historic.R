@@ -304,3 +304,7 @@ all_c <- bind_rows(mget(c("current_c", ls(pattern = "^communities_new_")))) %>%
 
 all_pa <- bind_rows(mget(c("current_pa", ls(pattern = "^plants_animals_")))) %>%
   arrange(Year)
+
+
+write_csv(all_c, "process-bcsee-data/out/BCSEE_Communities_final.csv")
+write_csv(all_pa, "process-bcsee-data/out/BCSEE_Plants_Animals_final.csv")
