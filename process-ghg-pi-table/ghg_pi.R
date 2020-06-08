@@ -19,20 +19,19 @@ library(glue)
 
 ## Import the .xlsx table from data/
 dir <- "process-ghg-pi-table/data"
-filename <- "2017_provincal_inventory.xlsx"
+filename <- "2018_provincial_inventory.xlsx"
 
-download.file("https://www2.gov.bc.ca/assets/gov/environment/climate-change/data/provincial-inventory/2017/2017_provincial_inventory.xlsx",
-              destfile = file.path(dir, filename))
+# download.file("https://www2.gov.bc.ca/assets/gov/environment/climate-change/data/provincial-inventory/2017/2017_provincial_inventory.xlsx",
+#               destfile = file.path(dir, filename))
 
 ## Get the metadata from the sheet
 units <- read_xlsx(file.path(getwd(),dir, filename),
-                   col_names = c("Note", "blank1", "blank2", "Comment"),
-                   range = cell_rows(5)) %>%
-  select(Note, Comment)
+                   col_names = c("Notes"),
+                   range = "Activity Categories!B3")
 
 metadata <- read_xlsx(file.path(getwd(),dir, filename),
-                      col_names = c("Note","Comment"),
-                      range = cell_rows(90:97)) %>%
+                      col_names = c("Notes"),
+                      range = cell_rows(91:98)) %>%
   rbind(units)
 
 
