@@ -49,7 +49,7 @@ formats <- xlsx_formats(file.path(dir, filename))
 sector_cell_formats <- xlsx_cells(file.path(dir, filename),
            sheets = "Activity Categories",
            include_blank_cells = FALSE) %>%
-  filter(col == 2, between(row, 5, 76)) %>%
+  filter(col == 2, between(row, 5, 76) | between(row, 79, 88)) %>%
   select(address, row, col, all_sectors = character, local_format_id) %>%
   mutate(
     all_sectors = gsub("^\\s+|\\s+$", "", all_sectors),
@@ -59,19 +59,27 @@ sector_cell_formats <- xlsx_cells(file.path(dir, filename),
          indent = map_int(local_format_id, ~ formats$local$alignment$indent[[.x]]),
          sector_level = case_when(
            is.na(text_colour) & bg_colour == "FFFFFFFF" & bold & indent == 0 ~ "sector",
-           text_colour == "FF00783C" & is.na(bg_colour) & bold & indent == 0 ~ "subsector_level1",
-           is.na(bg_colour) & !bold & indent == 1 ~ "subsector_level2",
+           text_colour == "FF00783C" & bold & indent == 0 ~ "subsector_level1",
+           !bold & indent == 1 ~ "subsector_level2",
            text_colour == "FFFFFFFF" & !bold & indent == 3 ~ "subsector_level3",
            TRUE ~ "ahhhh"
          )
   )
+
 
 # Join sector level info with data, filter out total rows
 data_wide <- read_xlsx(file.path(dir, filename),
                        col_names = newcols,
                        range = "B5:AE76",
                        na = c("", "-")) %>%
-  mutate(row = 5:76) %>%
+  mutate(row = seq(5, length.out = nrow(.))) %>%
+  bind_rows(
+    read_xlsx(file.path(dir, filename),
+                      col_names = newcols,
+                      range = "B79:AE88",
+                      na = c("", "-")) %>%
+      mutate(row = seq(79, length.out = nrow(.)))
+    ) %>%
   left_join(
     sector_cell_formats %>%
       select(row, all_sectors, sector_level),
@@ -82,7 +90,8 @@ data_wide <- read_xlsx(file.path(dir, filename),
   mutate(
     subsector_level1 = ifelse(!is.na(sector), "total", subsector_level1),
     subsector_level2 = ifelse(!is.na(subsector_level1), "total", subsector_level2),
-    subsector_level3 = ifelse(!is.na(subsector_level2), NA_character_, subsector_level3)
+    subsector_level3 = ifelse(!is.na(subsector_level2), NA_character_, subsector_level3),
+    sector = ifelse(subsector_level1 == "OTHER LAND USE", "Other Emissions Not Included In Inventory Total", sector)
   ) %>%
   fill(sector, subsector_level1, subsector_level2) %>%
   filter(sector != "total" & subsector_level1 != "total" & subsector_level2 != "total") %>%
