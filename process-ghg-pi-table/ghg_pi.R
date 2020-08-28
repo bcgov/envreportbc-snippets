@@ -33,7 +33,8 @@ units <- read_xlsx(file.path(getwd(),dir, filename),
 
 metadata <- read_xlsx(file.path(getwd(),dir, filename),
                       col_names = c("Notes"),
-                      range = cell_rows(91:98)) %>%
+                      range = cell_rows(90:98)) %>%
+  filter(!grepl("Indicates no emissions", Notes)) %>%
   rbind(units)
 
 ## Get the column names
