@@ -13,10 +13,7 @@
 library(readxl)
 library(tidyxl)
 library(dplyr)
-library(readr)
-library(stringr)
 library(tidyr)
-library(glue)
 library(purrr)
 
 ## Import the .xlsx table from data/
@@ -86,7 +83,7 @@ data_wide <- read_xlsx(file.path(dir, filename),
       select(row, all_sectors, sector_level),
     by = c("row", "all_sectors")
   ) %>%
-  mutate(all_sectors =  str_replace(all_sectors, "[0-9]$", "")) %>%
+  mutate(all_sectors =  gsub("[0-9]$", "", all_sectors)) %>%
   pivot_wider(names_from = sector_level, values_from = all_sectors) %>%
   mutate(
     subsector_level1 = ifelse(!is.na(sector), "total", subsector_level1),
@@ -111,13 +108,13 @@ data_long <- data_wide %>%
          year = as.integer(as.character(year)))
 
 totals <- data_long %>%
-  filter(sector != "OTHER LAND USE (Not included in total B.C. emissions)") %>%
+  filter(sector != "Other Emissions Not Included In Inventory Total") %>%
   group_by(year) %>%
   summarise(sum = round(sum(ktCO2e, na.rm=TRUE), digits = 0))
 totals
 
 sector_totals <- data_long %>%
-  filter(sector != "OTHER LAND USE (Not included in total B.C. emissions)") %>%
+  filter(sector != "Other Emissions Not Included In Inventory Total") %>%
   group_by(sector, year) %>%
   summarise(sum = round(sum(ktCO2e, na.rm=TRUE), digits = 0)) %>%
   mutate(year = as.integer(as.character(year))) %>%
@@ -127,5 +124,5 @@ sector_totals
 
 ## Save the re-formatted data as CSV file
 data_year <- "2018"
-write_csv(data_wide, (file.path(dir, glue(data_year, "_bc_ghg_emissions.csv"))))
-write_csv(metadata, (file.path(dir, glue(data_year, "_bc_ghg_emissions_metadata.csv"))))
+write_csv(data_wide, (file.path(dir, paste0(data_year, "_bc_ghg_emissions.csv"))))
+write_csv(metadata, (file.path(dir, paste0(data_year, "_bc_ghg_emissions_metadata.csv"))))
