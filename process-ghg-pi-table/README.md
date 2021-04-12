@@ -25,7 +25,8 @@ Process annual [Provincial GHG Inventory Table](https://www2.gov.bc.ca/gov/conte
 
 - read in the .xlsx file from the data/ folder
 - run the ghg_pi.R script
-- the ghg_pi.R script writes out a re-formatted .csv file for use
+- the ghg_pi_ipcc-sector.R script writes out a re-formatted .csv file of the GHGs by IPCC sector
+- the ghg_pi_econ-sector.R script writes out a re-formatted .csv file by ECCC economic sector
 
 
 ### More Information
