@@ -124,8 +124,8 @@ sector_totals <- data_long %>%
 sector_totals
 
 ## Save the re-formatted data as CSV file
-data_year <- "2018"
-fname <- paste0(data_year, "_bc_ghg_emissions_by_ipcc_sector.csv")
+data_year_range <- range(data_long$year)
+fname <- paste0("bc_ghg_emissions_by_ipcc_sector_", data_year_range[1], "-", data_year_range[2], ".csv")
 write_csv(data_wide, (file.path(dir, fname)))
 cat(
   paste0("## GHGs by IPCC Sector (", fname, ")\n"),
