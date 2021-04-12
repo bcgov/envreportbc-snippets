@@ -123,5 +123,12 @@ sector_totals
 
 ## Save the re-formatted data as CSV file
 data_year <- "2018"
-write_csv(data_wide, (file.path(dir, paste0(data_year, "_bc_ghg_emissions_by_economic_sector.csv"))))
-write_csv(metadata, (file.path(dir, paste0(data_year, "_bc_ghg_emissions_by_economic_sector_metadata.csv"))))
+fname <- paste0(data_year, "_bc_ghg_emissions_by_economic_sector.csv")
+write_csv(data_wide, (file.path(dir, fname)))
+cat(
+  paste0("\n## GHGs by Economic Sector (", fname, ")\n"),
+  replace_na(metadata$Notes, ""),
+  file = file.path(dir, paste0(data_year, "_metadata.txt")),
+  sep = "\n",
+  append = TRUE
+)
