@@ -130,6 +130,6 @@ write_csv(data_wide, (file.path(dir, fname)))
 cat(
   paste0("## GHGs by IPCC Sector (", fname, ")\n"),
   replace_na(metadata$Notes, ""),
-  file = file.path(dir, paste0(data_year, "_metadata.txt")),
+  file = file.path(dir, paste0("bc_ghg_emissions_", data_year_range[1], "-", data_year_range[2], "_metadata.txt")),
   sep = "\n"
 )
