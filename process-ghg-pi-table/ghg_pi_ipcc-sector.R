@@ -41,6 +41,10 @@ prov_inv = prov_inv %>%
              'comp_2019_2020_1','comp_2019_2020_2',
              'three_year_trend_1','three_year_trend_2'))
 
+# Drop blank spaces at the end or start of ghg categories
+prov_inv = prov_inv %>%
+  mutate(ghg_category = str_squish(ghg_category))
+
 metadata = prov_inv %>%
   slice((which(ghg_category == 'Notes:')+1):nrow(.)) %>%
   rename(notes = ghg_category) %>%
@@ -78,8 +82,7 @@ prov_inv = prov_inv %>%
   #Use the sector_cell_formats object to set category levels.
   left_join(sector_cell_formats) %>%
   dplyr::select(sector_level, everything()) %>%
-  filter(year_1990 != "")%>%
-  mutate(sector_level = replace_na(sector_level, 'subsector_level1'))
+  filter(year_1990 != "")
 
 write.csv(prov_inv, file.path(dir,'bc_ghg_emissions_by_activity_categories_1990-2020.csv'),
           row.names = F)
