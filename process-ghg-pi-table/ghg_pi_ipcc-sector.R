@@ -53,9 +53,9 @@ metadata = prov_inv %>%
 ## Get the core data, wrangle the 3 attribute columns
 ## into the official sector & 3 subsector columns, and filter out total rows
 
-formats <- xlsx_formats('C:/Users/CMADSEN/Downloads/provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx')
+formats <- xlsx_formats('provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx')
 
-sector_cell_formats <- xlsx_cells('C:/Users/CMADSEN/Downloads/provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx',
+sector_cell_formats <- xlsx_cells('provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx',
                                   sheets = "Activity Categories",
                                   include_blank_cells = FALSE) %>%
   filter(col == 2, between(row, 5, 76) | between(row, 79, 88)) %>%
@@ -88,9 +88,8 @@ write.csv(prov_inv, file.path(dir,'bc_ghg_emissions_by_activity_categories_1990-
           row.names = F)
 
 # Copy these results into the GHG indicator folder, if you have it on your local machine.
-my_base_dir = str_remove(getwd(),'envreportbc-snippets')
-if(dir.exists(paste0(my_base_dir,'ghg-emissions-indicator/tmp'))){
+if(dir.exists('C:/tmp/ghg-emissions-indicator/data')){
   file.copy(from = file.path(dir,'bc_ghg_emissions_by_activity_categories_1990-2020.csv'),
-            to = paste0(my_base_dir,'ghg-emissions-indicator/tmp/bc_ghg_emissions_by_activity_categories_1990-2020.csv'),
+            to = 'C:/tmp/ghg-emissions-indicator/data/bc_ghg_emissions_by_activity_categories_1990-2020.csv',
             overwrite = T)
 }

@@ -22,7 +22,7 @@ library(readr)
 ## IMPORTANT: for now, I can't get the automatic XLSX download to work. Directly reading the excel file
 ## does work, but drops the formatting. To properly identify category levels (i.e. main category, subcategory, sub-subcategory, etc.),
 ## you must download the excel file from here: https://www2.gov.bc.ca/assets/gov/environment/climate-change/data/provincial-inventory/2020/provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx
-## and place it somewhere, e.g. your Downloads folder, as I did.
+## and place it in the data folder.
 
 
 ## Import the .xlsx table from data/
@@ -55,9 +55,9 @@ metadata = prov_inv %>%
 ## Get the core data, wrangle the 3 attribute columns
 ## into the official sector & 3 subsector columns, and filter out total rows
 
-formats <- xlsx_formats('C:/Users/CMADSEN/Downloads/provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx')
+formats <- xlsx_formats('provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx')
 
-sector_cell_formats = xlsx_cells('C:/Users/CMADSEN/Downloads/provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx',
+sector_cell_formats = xlsx_cells('provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx',
                                   sheets = "Economic Sectors",
                                   include_blank_cells = FALSE) %>%
   filter(col == 2, between(row, 5, 51) | between(row, 54, 63)) %>%
@@ -88,10 +88,10 @@ prov_inv = prov_inv %>%
 write.csv(prov_inv, file.path(dir,'bc_ghg_emissions_by_economic_sector_1990-2020.csv'),
           row.names = F)
 
+
 # Copy these results into the GHG indicator folder, if you have it on your local machine.
-my_base_dir = str_remove(getwd(),'envreportbc-snippets')
-if(dir.exists(paste0(my_base_dir,'ghg-emissions-indicator/tmp'))){
+if(dir.exists('C:/tmp/ghg-emissions-indicator/data')){
   file.copy(from = file.path(dir,'bc_ghg_emissions_by_economic_sector_1990-2020.csv'),
-            to = paste0(my_base_dir,'ghg-emissions-indicator/tmp/bc_ghg_emissions_by_economic_sector_1990-2020.csv'),
+            to = 'C:/tmp/ghg-emissions-indicator/data/bc_ghg_emissions_by_economic_sector_1990-2020.csv',
             overwrite = T)
 }
