@@ -12,6 +12,8 @@
 
 library(readxl)
 library(tidyxl)
+library(tidyverse)
+library(openxlsx)
 library(dplyr)
 library(tidyr)
 library(purrr)
@@ -19,117 +21,75 @@ library(readr)
 
 ## Import the .xlsx table from data/
 dir <- "process-ghg-pi-table/data"
-filename <- "bc_provincial_ghg_inventory_1990-2018.xlsx"
+filename <- "provincial_inventory_of_greenhouse_gas_emissions_economic_sectors_1990-2020.xlsx"
 
-# download.file("https://www2.gov.bc.ca/assets/gov/environment/climate-change/data/provincial-inventory/2017/2017_provincial_inventory.xlsx",
-#               destfile = file.path(dir, filename))
+prov_inv = openxlsx::read.xlsx("https://www2.gov.bc.ca/assets/gov/environment/climate-change/data/provincial-inventory/2020/provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx",
+                               startRow = 3,
+                               sheet = 'Activity Categories') %>%
+  as_tibble() %>%
+  distinct()
 
-## Get the metadata from the sheet
-units <- read_xlsx(file.path(getwd(),dir, filename),
-                   col_names = c("Notes"),
-                   range = "Activity Categories!B3")
+write.xlsx(prov_inv, paste(dir,filename, sep = '/'), overwrite = T)
 
-metadata <- read_xlsx(file.path(getwd(),dir, filename),
-                      col_names = c("Notes"),
-                      range = "Activity Categories!B90:B99") %>%
-  filter(!grepl("Indicates no emissions", Notes)) %>%
-  rbind(units)
+# Grab the units from the original column name of column A.
+units = str_remove(names(prov_inv)[1], "Unit:\\.")
 
-## Get the column names
-newcols <- c("all_sectors", colnames(read_xlsx(file.path(dir, filename),
-                                          col_names = TRUE, range = "Activity Categories!C3:AE3")))
+# Improve readability of column names.
+prov_inv = prov_inv %>%
+  setNames(c('ghg_category',paste0('year_',1990:2020),
+             'comp_2007_2020_1','comp_2007_2020_2',
+             'comp_2019_2020_1','comp_2019_2020_2',
+             'three_year_trend_1','three_year_trend_2'))
+
+# Drop blank spaces at the end or start of ghg categories
+prov_inv = prov_inv %>%
+  mutate(ghg_category = str_squish(ghg_category))
+
+metadata = prov_inv %>%
+  slice((which(ghg_category == 'Notes:')+1):nrow(.)) %>%
+  rename(notes = ghg_category) %>%
+  dplyr::select(notes)
 
 ## Get the core data, wrangle the 3 attribute columns
 ## into the official sector & 3 subsector columns, and filter out total rows
 
-# extract cell formatting to deduce sector/subsector level
-formats <- xlsx_formats(file.path(dir, filename))
+formats <- xlsx_formats('provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx')
 
-sector_cell_formats <- xlsx_cells(file.path(dir, filename),
-           sheets = "Activity Categories",
-           include_blank_cells = FALSE) %>%
+sector_cell_formats <- xlsx_cells('provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx',
+                                  sheets = "Activity Categories",
+                                  include_blank_cells = FALSE) %>%
   filter(col == 2, between(row, 5, 76) | between(row, 79, 88)) %>%
-  select(address, row, col, all_sectors = character, local_format_id) %>%
+  select(address, row, col, ghg_category = character, local_format_id) %>%
   mutate(
-    all_sectors = gsub("^\\s+|\\s+$", "", all_sectors),
+    ghg_category = gsub("^\\s+|\\s+$", "", ghg_category),
     text_colour = map_chr(local_format_id, ~ formats$local$font$color$rgb[[.x]]),
-         bg_colour = map_chr(local_format_id, ~ formats$local$fill$patternFill$bgColor$rgb[[.x]]),
-         bold = map_lgl(local_format_id, ~ formats$local$font$bold[[.x]]),
-         indent = map_int(local_format_id, ~ formats$local$alignment$indent[[.x]]),
-         sector_level = case_when(
-           is.na(text_colour) & bg_colour == "FFFFFFFF" & bold & indent == 0 ~ "sector",
-           text_colour == "FF00783C" & bold & indent == 0 ~ "subsector_level1",
-           !bold & indent == 1 ~ "subsector_level2",
-           text_colour == "FFFFFFFF" & !bold & indent == 3 ~ "subsector_level3",
-           TRUE ~ "ahhhh"
-         )
-  )
-
-
-# Join sector level info with data, filter out total rows
-data_wide <- read_xlsx(file.path(dir, filename),
-                       col_names = newcols,
-                       range = "Activity Categories!B5:AE76",
-                       na = c("", "-")) %>%
-  mutate(row = seq(5, length.out = nrow(.))) %>%
-  bind_rows(
-    read_xlsx(file.path(dir, filename),
-                      col_names = newcols,
-                      range = "Activity Categories!B79:AE88",
-                      na = c("", "-")) %>%
-      mutate(row = seq(79, length.out = nrow(.)))
-    ) %>%
-  left_join(
-    sector_cell_formats %>%
-      select(row, all_sectors, sector_level),
-    by = c("row", "all_sectors")
+    bg_colour = map_chr(local_format_id, ~ formats$local$fill$patternFill$bgColor$rgb[[.x]]),
+    bold = map_lgl(local_format_id, ~ formats$local$font$bold[[.x]]),
+    indent = map_int(local_format_id, ~ formats$local$alignment$indent[[.x]]),
+    sector_level = case_when(
+      is.na(text_colour) & bg_colour == "FFFFFFFF" & bold & indent == 0 ~ "sector",
+      text_colour == "FF00783C" & bold & indent == 0 ~ "subsector_level1",
+      !bold & indent == 1 ~ "subsector_level2",
+      text_colour == "FFFFFFFF" & !bold & indent == 3 ~ "subsector_level3",
+      TRUE ~ "ahhhh"
+    )
   ) %>%
-  mutate(all_sectors =  gsub("[0-9]$", "", all_sectors)) %>%
-  pivot_wider(names_from = sector_level, values_from = all_sectors) %>%
-  mutate(
-    subsector_level1 = ifelse(!is.na(sector), "total", subsector_level1),
-    subsector_level2 = ifelse(!is.na(subsector_level1), "total", subsector_level2),
-    subsector_level3 = ifelse(!is.na(subsector_level2), NA_character_, subsector_level3),
-    sector = ifelse(subsector_level1 == "OTHER LAND USE", "Other Emissions Not Included In Inventory Total", sector)
-  ) %>%
-  fill(sector, subsector_level1, subsector_level2) %>%
-  filter(sector != "total" & subsector_level1 != "total" & subsector_level2 != "total") %>%
-  group_by(sector, subsector_level1, subsector_level2) %>%
-  mutate(n = n()) %>%
-  ungroup() %>%
-  filter(n == 1 | (!is.na(subsector_level3) & n > 1)) %>%
-  select(sector, subsector_level1, subsector_level2, subsector_level3, `1990`:`2018`)
+  dplyr::select(ghg_category, sector_level)
 
-## Testing to make sure sums are same as input table
-data_long <- data_wide %>%
-  gather(key =  year, value = ktCO2e,
-         -sector, -subsector_level1,
-         -subsector_level2, -subsector_level3) %>%
-  mutate(ktCO2e = as.numeric(ktCO2e),
-         year = as.integer(as.character(year)))
+prov_inv = prov_inv %>%
+  #Remove the total.
+  filter(ghg_category != 'TOTAL1') %>%
+  #Use the sector_cell_formats object to set category levels.
+  left_join(sector_cell_formats) %>%
+  dplyr::select(sector_level, everything()) %>%
+  filter(year_1990 != "")
 
-totals <- data_long %>%
-  filter(sector != "Other Emissions Not Included In Inventory Total") %>%
-  group_by(year) %>%
-  summarise(sum = round(sum(ktCO2e, na.rm=TRUE), digits = 0))
-totals
+write.csv(prov_inv, file.path(dir,'bc_ghg_emissions_by_activity_categories_1990-2020.csv'),
+          row.names = F)
 
-sector_totals <- data_long %>%
-  filter(sector != "Other Emissions Not Included In Inventory Total") %>%
-  group_by(sector, year) %>%
-  summarise(sum = round(sum(ktCO2e, na.rm=TRUE), digits = 0)) %>%
-  mutate(year = as.integer(as.character(year))) %>%
-  filter(!is.na(year))
-
-sector_totals
-
-## Save the re-formatted data as CSV file
-data_year_range <- range(data_long$year)
-fname <- paste0("bc_ghg_emissions_by_ipcc_sector_", data_year_range[1], "-", data_year_range[2], ".csv")
-write_csv(data_wide, (file.path(dir, fname)))
-cat(
-  paste0("## GHGs by IPCC Sector (", fname, ")\n"),
-  replace_na(metadata$Notes, ""),
-  file = file.path(dir, paste0("bc_ghg_emissions_", data_year_range[1], "-", data_year_range[2], "_metadata.txt")),
-  sep = "\n"
-)
+# Copy these results into the GHG indicator folder, if you have it on your local machine.
+if(dir.exists('C:/tmp/ghg-emissions-indicator/data')){
+  file.copy(from = file.path(dir,'bc_ghg_emissions_by_activity_categories_1990-2020.csv'),
+            to = 'C:/tmp/ghg-emissions-indicator/data/bc_ghg_emissions_by_activity_categories_1990-2020.csv',
+            overwrite = T)
+}
