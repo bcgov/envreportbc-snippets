@@ -106,7 +106,7 @@ data_wide <- read_xlsx(file.path(dir, filename),
   mutate(n = n()) %>%
   ungroup() %>%
   filter(n == 1 | (!is.na(subsector_level3) & n > 1)) %>%
-  select(sector, subsector_level1, subsector_level2, subsector_level3, `1990`:`2018`)
+  select(sector, subsector_level1, subsector_level2, subsector_level3, `1990`:`2020`)
 
 ## Testing to make sure sums are same as input table
 data_long <- data_wide %>%
