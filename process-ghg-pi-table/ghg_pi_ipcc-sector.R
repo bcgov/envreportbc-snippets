@@ -17,9 +17,12 @@ library(tidyr)
 library(purrr)
 library(readr)
 
+## Manually download the .xlsx table from the following URL:
+## https://www2.gov.bc.ca/assets/gov/environment/climate-change/data/provincial-inventory/2020/provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx
+
 ## Import the .xlsx table from data/
 dir <- "process-ghg-pi-table/data"
-filename <- "bc_provincial_ghg_inventory_1990-2018.xlsx"
+filename <- 'provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx'
 
 # download.file("https://www2.gov.bc.ca/assets/gov/environment/climate-change/data/provincial-inventory/2017/2017_provincial_inventory.xlsx",
 #               destfile = file.path(dir, filename))
@@ -37,7 +40,7 @@ metadata <- read_xlsx(file.path(getwd(),dir, filename),
 
 ## Get the column names
 newcols <- c("all_sectors", colnames(read_xlsx(file.path(dir, filename),
-                                          col_names = TRUE, range = "Activity Categories!C3:AE3")))
+                                          col_names = TRUE, range = "Activity Categories!C3:AG3")))
 
 ## Get the core data, wrangle the 3 attribute columns
 ## into the official sector & 3 subsector columns, and filter out total rows
@@ -69,13 +72,18 @@ sector_cell_formats <- xlsx_cells(file.path(dir, filename),
 # Join sector level info with data, filter out total rows
 data_wide <- read_xlsx(file.path(dir, filename),
                        col_names = newcols,
-                       range = "Activity Categories!B5:AE76",
+                       range = "Activity Categories!B5:AG76",
                        na = c("", "-")) %>%
   mutate(row = seq(5, length.out = nrow(.))) %>%
+  # apply(MARGIN = 2, FUN = function(x) replace(x, x == 'x', NA))
+  # Some row values are 'x' - need to replace those with NA and change those
+  # fields to numeric data type.
+  mutate(across(everything(), \(x) replace(x, x == 'x', NA))) %>%
+  mutate(across(contains('20'), as.numeric)) %>%
   bind_rows(
     read_xlsx(file.path(dir, filename),
                       col_names = newcols,
-                      range = "Activity Categories!B79:AE88",
+                      range = "Activity Categories!B79:AG88",
                       na = c("", "-")) %>%
       mutate(row = seq(79, length.out = nrow(.)))
     ) %>%
