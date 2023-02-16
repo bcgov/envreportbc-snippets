@@ -12,10 +12,13 @@
 
 library(readxl)
 library(tidyxl)
+library(tidyverse)
+library(openxlsx)
 library(dplyr)
 library(tidyr)
 library(purrr)
 library(readr)
+
 
 ## Manually download the .xlsx table from the following URL:
 ## https://www2.gov.bc.ca/assets/gov/environment/climate-change/data/provincial-inventory/2020/provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx
@@ -29,29 +32,32 @@ units <- readxl::read_xlsx(file.path(getwd(),dir, filename),
                    col_names = c("Notes"),
                    range = "Economic Sectors!B3")
 
-metadata <- read_xlsx(file.path(getwd(),dir, filename),
-                      col_names = c("Notes"),
-                      range = "Economic Sectors!B66:B71") %>%
-  filter(!grepl("Indicates no emissions", Notes)) %>%
-  rbind(units)
+
+# Improve readability of column names.
+prov_inv = prov_inv %>%
+  setNames(c('ghg_category',paste0('year_',1990:2020),
+           'comp_2007_2020_1','comp_2007_2020_2',
+           'comp_2019_2020_1','comp_2019_2020_2',
+           'three_year_trend_1','three_year_trend_2'))
+
 
 ## Get the column names
 newcols <- c("all_sectors", colnames(read_xlsx(file.path(dir, filename),
                                                col_names = TRUE, range = "Economic Sectors!C3:AG3")))
 
+
 ## Get the core data, wrangle the 3 attribute columns
 ## into the official sector & 3 subsector columns, and filter out total rows
 
-# extract cell formatting to deduce sector/subsector level
-formats <- xlsx_formats(file.path(dir, filename))
+formats <- xlsx_formats('provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx')
 
-sector_cell_formats <- xlsx_cells(file.path(dir, filename),
+sector_cell_formats = xlsx_cells('provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx',
                                   sheets = "Economic Sectors",
                                   include_blank_cells = FALSE) %>%
   filter(col == 2, between(row, 5, 51) | between(row, 54, 63)) %>%
-  select(address, row, col, all_sectors = character, local_format_id) %>%
+  select(address, row, col, ghg_category = character, local_format_id) %>%
   mutate(
-    all_sectors = gsub("^\\s+|\\s+$", "", all_sectors),
+    ghg_category = gsub("^\\s+|\\s+$", "", ghg_category),
     text_colour = map_chr(local_format_id, ~ formats$local$font$color$rgb[[.x]]),
     bg_colour = map_chr(local_format_id, ~ formats$local$fill$patternFill$bgColor$rgb[[.x]]),
     bold = map_lgl(local_format_id, ~ formats$local$font$bold[[.x]]),
@@ -62,6 +68,7 @@ sector_cell_formats <- xlsx_cells(file.path(dir, filename),
       text_colour == "FFFFFFFF" & !bold & (indent == 2 | indent ==3) ~ "subsector_level2",
       TRUE ~ "ahhhh"
     )
+
   )
 
 

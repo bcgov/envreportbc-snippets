@@ -12,6 +12,8 @@
 
 library(readxl)
 library(tidyxl)
+library(tidyverse)
+library(openxlsx)
 library(dplyr)
 library(tidyr)
 library(purrr)
@@ -22,39 +24,39 @@ library(readr)
 
 ## Import the .xlsx table from data/
 dir <- "process-ghg-pi-table/data"
+
 filename <- 'provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx'
 
-# download.file("https://www2.gov.bc.ca/assets/gov/environment/climate-change/data/provincial-inventory/2017/2017_provincial_inventory.xlsx",
-#               destfile = file.path(dir, filename))
 
-## Get the metadata from the sheet
-units <- read_xlsx(file.path(getwd(),dir, filename),
-                   col_names = c("Notes"),
-                   range = "Activity Categories!B3")
+prov_inv = openxlsx::read.xlsx("https://www2.gov.bc.ca/assets/gov/environment/climate-change/data/provincial-inventory/2020/provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx",
+                               startRow = 3,
+                               sheet = 'Activity Categories') %>%
+  as_tibble() %>%
+  distinct()
 
-metadata <- read_xlsx(file.path(getwd(),dir, filename),
-                      col_names = c("Notes"),
-                      range = "Activity Categories!B90:B99") %>%
-  filter(!grepl("Indicates no emissions", Notes)) %>%
-  rbind(units)
+write.xlsx(prov_inv, paste(dir,filename, sep = '/'), overwrite = T)
+
+# Grab the units from the original column name of column A.
+units = str_remove(names(prov_inv)[1], "Unit:\\.")
+
 
 ## Get the column names
 newcols <- c("all_sectors", colnames(read_xlsx(file.path(dir, filename),
                                           col_names = TRUE, range = "Activity Categories!C3:AG3")))
 
+
 ## Get the core data, wrangle the 3 attribute columns
 ## into the official sector & 3 subsector columns, and filter out total rows
 
-# extract cell formatting to deduce sector/subsector level
-formats <- xlsx_formats(file.path(dir, filename))
+formats <- xlsx_formats('provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx')
 
-sector_cell_formats <- xlsx_cells(file.path(dir, filename),
-           sheets = "Activity Categories",
-           include_blank_cells = FALSE) %>%
+sector_cell_formats <- xlsx_cells('provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx',
+                                  sheets = "Activity Categories",
+                                  include_blank_cells = FALSE) %>%
   filter(col == 2, between(row, 5, 76) | between(row, 79, 88)) %>%
-  select(address, row, col, all_sectors = character, local_format_id) %>%
+  select(address, row, col, ghg_category = character, local_format_id) %>%
   mutate(
-    all_sectors = gsub("^\\s+|\\s+$", "", all_sectors),
+    ghg_category = gsub("^\\s+|\\s+$", "", ghg_category),
     text_colour = map_chr(local_format_id, ~ formats$local$font$color$rgb[[.x]]),
          bg_colour = map_chr(local_format_id, ~ formats$local$fill$patternFill$bgColor$rgb[[.x]]),
          bold = map_lgl(local_format_id, ~ formats$local$font$bold[[.x]]),
