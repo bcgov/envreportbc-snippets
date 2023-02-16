@@ -29,6 +29,6 @@ Process annual British Columbia Provincial Greenhouse Gas Inventory Table .xlsx 
 
 ### More Information
 
-The .csv outputs of these scripts are used to update the DataBC Catalogue - (British Columbia Greenhouse Gas Emissions)[https://catalogue.data.gov.bc.ca/dataset/24c899ee-ef73-44a2-8569-a0d6b094e60c]
+The .csv outputs of these scripts are used to update the DataBC Catalogue - [British Columbia Greenhouse Gas Emissions](https://catalogue.data.gov.bc.ca/dataset/24c899ee-ef73-44a2-8569-a0d6b094e60c)
 
-You can learn more about the Environmental Reporting BC's Greenhouse Gas Indicator (here)[https://www.env.gov.bc.ca/soe/indicators/sustainability/ghg-emissions.html)
+You can learn more about the Environmental Reporting BC's Greenhouse Gas Indicator [here](https://www.env.gov.bc.ca/soe/indicators/sustainability/ghg-emissions.html)
