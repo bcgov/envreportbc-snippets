@@ -21,12 +21,14 @@ This script supports the re-formatting of the anually released [British Columbia
 
 ### Usage
 
-Process annual [Provincial GHG Inventory Table](https://www2.gov.bc.ca/gov/content?id=50B908BE85E0446EB6D3C434B4C8C106) .xlsx file:
+Process annual British Columbia Provincial Greenhouse Gas Inventory Table .xlsx file:
 
--   download the updated Provincial Inventory .xlsx file and place it in the process-ghg-pi-table/data folder
+-   download the updated Provincial Inventory .xlsx file at link above and place it in the process-ghg-pi-table/data folder
 -   the ghg_pi_ipcc-sector.R script writes out a re-formatted .csv file of the GHGs by IPCC sector
 -   the ghg_pi_econ-sector.R script writes out a re-formatted .csv file by ECCC economic sector
 
 ### More Information
 
-You can learn about the Provincial Greenhouse Gas Inventory [here](https://www2.gov.bc.ca/gov/content?id=50B908BE85E0446EB6D3C434B4C8C106).
+The .csv outputs of these scripts are used to update the DataBC Catalogue - (British Columbia Greenhouse Gas Emissions)[https://catalogue.data.gov.bc.ca/dataset/24c899ee-ef73-44a2-8569-a0d6b094e60c]
+
+You can learn more about the Environmental Reporting BC's Greenhouse Gas Indicator (here)[https://www.env.gov.bc.ca/soe/indicators/sustainability/ghg-emissions.html)
