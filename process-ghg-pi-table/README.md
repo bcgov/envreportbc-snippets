@@ -26,6 +26,7 @@ Process annual British Columbia Provincial Greenhouse Gas Inventory Table .xlsx 
 -   download the updated Provincial Inventory .xlsx file at link above and place it in the process-ghg-pi-table/data folder
 -   the ghg_pi_ipcc-sector.R script writes out a re-formatted .csv file of the GHGs by IPCC sector
 -   the ghg_pi_econ-sector.R script writes out a re-formatted .csv file by ECCC economic sector
+-   manual updates of both scripts are required to process the new year of data
 
 ### More Information
 
