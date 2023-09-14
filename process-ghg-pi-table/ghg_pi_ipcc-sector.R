@@ -6,9 +6,9 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+# Unless required by applicable law or AHreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and limitations under the License.
+# See the License for the specific languAHe governing permissions and limitations under the License.
 
 library(readxl)
 library(tidyxl)
@@ -23,7 +23,7 @@ library(readr)
 
 ## Import the .xlsx table from data/
 dir <- "process-ghg-pi-table/data"
-filename <- 'provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx'
+filename <- 'provincial_inventory_of_greenhouse_gas_emissions_1990-2021.xlsx'
 
 # download.file("https://www2.gov.bc.ca/assets/gov/environment/climate-change/data/provincial-inventory/2017/2017_provincial_inventory.xlsx",
 #               destfile = file.path(dir, filename))
@@ -41,7 +41,7 @@ metadata <- read_xlsx(file.path(getwd(),dir, filename),
 
 ## Get the column names
 newcols <- c("all_sectors", colnames(read_xlsx(file.path(dir, filename),
-                                          col_names = TRUE, range = "Activity Categories!C3:AG3")))
+                                          col_names = TRUE, range = "Activity Categories!C3:AH3")))
 
 ## Get the core data, wrangle the 3 attribute columns
 ## into the official sector & 3 subsector columns, and filter out total rows
@@ -73,7 +73,7 @@ sector_cell_formats <- xlsx_cells(file.path(dir, filename),
 # Join sector level info with data, filter out total rows
 data_wide <- read_xlsx(file.path(dir, filename),
                        col_names = newcols,
-                       range = "Activity Categories!B5:AG76",
+                       range = "Activity Categories!B5:AH76",
                        na = c("", "-")) %>%
   mutate(row = seq(5, length.out = nrow(.))) %>%
   # apply(MARGIN = 2, FUN = function(x) replace(x, x == 'x', NA))
@@ -84,7 +84,7 @@ data_wide <- read_xlsx(file.path(dir, filename),
   bind_rows(
     read_xlsx(file.path(dir, filename),
                       col_names = newcols,
-                      range = "Activity Categories!B79:AG88",
+                      range = "Activity Categories!B79:AH88",
                       na = c("", "-")) %>%
       mutate(row = seq(79, length.out = nrow(.)))
     ) %>%
@@ -107,7 +107,7 @@ data_wide <- read_xlsx(file.path(dir, filename),
   mutate(n = n()) %>%
   ungroup() %>%
   filter(n == 1 | (!is.na(subsector_level3) & n > 1)) %>%
-  select(sector, subsector_level1, subsector_level2, subsector_level3, `1990`:`2020`)
+  select(sector, subsector_level1, subsector_level2, subsector_level3, `1990`:`2021`)
 
 ## Testing to make sure sums are same as input table
 data_long <- data_wide %>%

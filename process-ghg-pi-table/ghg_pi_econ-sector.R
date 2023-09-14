@@ -19,11 +19,11 @@ library(readr)
 
 
 ## Manually download the .xlsx table from the following URL:
-## https://www2.gov.bc.ca/assets/gov/environment/climate-change/data/provincial-inventory/2020/provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx
+## https://www2.gov.bc.ca/assets/gov/environment/climate-change/data/provincial-inventory/2021/provincial_inventory_of_greenhouse_gas_emissions_1990-2021.xlsx
 
 ## Import the .xlsx table from data/
 dir <- "process-ghg-pi-table/data"
-filename <- 'provincial_inventory_of_greenhouse_gas_emissions_1990-2020.xlsx'
+filename <- 'provincial_inventory_of_greenhouse_gas_emissions_1990-2021.xlsx'
 
 ## Get the metadata from the sheet
 units <- readxl::read_xlsx(file.path(getwd(),dir, filename),
@@ -38,7 +38,7 @@ metadata <- read_xlsx(file.path(getwd(),dir, filename),
 
 ## Get the column names
 newcols <- c("all_sectors", colnames(read_xlsx(file.path(dir, filename),
-                                               col_names = TRUE, range = "Economic Sectors!C3:AG3")))
+                                               col_names = TRUE, range = "Economic Sectors!C3:AH3")))
 
 ## Get the core data, wrangle the 3 attribute columns
 ## into the official sector & 3 subsector columns, and filter out total rows
@@ -69,13 +69,13 @@ sector_cell_formats <- xlsx_cells(file.path(dir, filename),
 # Join sector level info with data, filter out total rows
 data_wide <- read_xlsx(file.path(dir, filename),
                        col_names = newcols,
-                       range = "Economic Sectors!B5:AG51",
+                       range = "Economic Sectors!B5:AH51",
                        na = c("", "-")) %>%
   mutate(row = seq(5, length.out = nrow(.))) %>%
   bind_rows(
     read_xlsx(file.path(dir, filename),
               col_names = newcols,
-              range = "Economic Sectors!B54:AG63",
+              range = "Economic Sectors!B54:AH63",
               na = c("", "-")) %>%
       mutate(row = seq(54, length.out = nrow(.)))
   ) %>%
@@ -97,7 +97,7 @@ data_wide <- read_xlsx(file.path(dir, filename),
   mutate(n = n()) %>%
   ungroup() %>%
   filter(n == 1 | (!is.na(subsector_level2) & n > 1)) %>%
-  select(sector, subsector_level1, subsector_level2, `1990`:`2020`)
+  select(sector, subsector_level1, subsector_level2, `1990`:`2021`)
 
 ## Testing to make sure sums are same as input table
 data_long <- data_wide %>%
@@ -133,3 +133,4 @@ cat(
   sep = "\n",
   append = TRUE
 )
+
