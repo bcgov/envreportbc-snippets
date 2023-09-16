@@ -71,7 +71,7 @@ data_wide <- read_xlsx(file.path(dir, filename),
                        na = c("", "-")) %>%
   mutate(row = seq(5, length.out = nrow(.))) %>%
   bind_rows(
-    read_xlsx(file.path(dir, filename),
+   read_xlsx(file.path(dir, filename),
               col_names = newcols,
               range = "Gases!B525:AI601",
               na = c("", "-")) %>%
@@ -82,6 +82,8 @@ data_wide <- read_xlsx(file.path(dir, filename),
       select(row, all_sectors, sector_level),
     by = c("row", "all_sectors")
   ) %>%
+  fill(gas) %>%
+  filter(!is.na(all_sectors)) %>%
   mutate(all_sectors =  gsub("[0-9]$", "", all_sectors)) %>%
   pivot_wider(names_from = sector_level, values_from = all_sectors) %>%
   mutate(
