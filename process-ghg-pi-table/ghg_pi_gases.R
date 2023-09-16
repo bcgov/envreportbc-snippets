@@ -67,15 +67,15 @@ sector_cell_formats <- xlsx_cells(file.path(dir, filename),
 # Join sector level info with data, filter out total rows
 data_wide <- read_xlsx(file.path(dir, filename),
                        col_names = newcols,
-                       range = "Economic Sectors!B5:AH51",
+                       range = "Gases!B5:AI522",
                        na = c("", "-")) %>%
   mutate(row = seq(5, length.out = nrow(.))) %>%
   bind_rows(
     read_xlsx(file.path(dir, filename),
               col_names = newcols,
-              range = "Economic Sectors!B54:AH63",
+              range = "Gases!B525:AI601",
               na = c("", "-")) %>%
-      mutate(row = seq(54, length.out = nrow(.)))
+      mutate(row = seq(525, length.out = nrow(.)))
   ) %>%
   left_join(
     sector_cell_formats %>%
