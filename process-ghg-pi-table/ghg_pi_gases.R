@@ -89,7 +89,7 @@ data_wide <- read_xlsx(file.path(dir, filename),
   mutate(
     subsector_level1 = ifelse(!is.na(sector), "total", subsector_level1),
     subsector_level2 = ifelse(!is.na(subsector_level1), NA_character_, subsector_level2),
-    sector = ifelse(sector == "OTHER LAND USE", "Other Emissions Not Included In Inventory Total", sector)
+    subsector_level1 = ifelse(subsector_level1 == "OTHER LAND USE", "Other Emissions Not Included In Inventory Total", subsector_level1)
   ) %>%
   fill(sector, subsector_level1) %>%
   filter(sector != "total" & subsector_level1 != "total") %>%
@@ -97,26 +97,26 @@ data_wide <- read_xlsx(file.path(dir, filename),
   mutate(n = n()) %>%
   ungroup() %>%
   filter(n == 1 | (!is.na(subsector_level2) & n > 1)) %>%
-  select(sector, subsector_level1, subsector_level2, `1990`:`2021`)
+  select(gas, sector, subsector_level1, subsector_level2, `1990`:`2021`)
 
 ## Testing to make sure sums are same as input table
 data_long <- data_wide %>%
-  gather(key =  year, value = ktCO2e,
+  gather(key =  year, value = ktCO2e, -gas,
          -sector, -subsector_level1,
          -subsector_level2) %>%
   mutate(ktCO2e = as.numeric(ktCO2e),
          year = as.integer(as.character(year)))
 
 totals <- data_long %>%
-  filter(sector != "Other Emissions Not Included In Inventory Total") %>%
-  group_by(year) %>%
+  filter(subsector_level1 != "Other Emissions Not Included In Inventory Total") %>%
+  group_by(gas, year) %>%
   summarise(sum = round(sum(ktCO2e, na.rm=TRUE), digits = 0))
 totals
 
 sector_totals <- data_long %>%
-  filter(sector != "Other Emissions Not Included In Inventory Total") %>%
-  group_by(sector, year) %>%
-  summarise(sum = round(sum(ktCO2e, na.rm=TRUE), digits = 0)) %>%
+  filter(subsector_level1 != "Other Emissions Not Included In Inventory Total") %>%
+  group_by(gas, sector, subsector_level1, year) %>%
+  summarise(sum = round(sum(ktCO2e, na.rm=TRUE), digits = 1)) %>%
   mutate(year = as.integer(as.character(year))) %>%
   filter(!is.na(year))
 
@@ -124,12 +124,12 @@ sector_totals
 
 ## Save the re-formatted data as CSV file
 data_year_range <- range(data_long$year)
-fname <- paste0("bc_ghg_emissions_by_economic_sector_", data_year_range[1], "-", data_year_range[2], ".csv")
+fname <- paste0("bc_ghg_emissions_by_economic_sector_by_gas", data_year_range[1], "-", data_year_range[2], ".csv")
 write_csv(data_wide, (file.path(dir, fname)))
 cat(
   paste0("\n## GHGs by Economic Sector (", fname, ")\n"),
   replace_na(metadata$Notes, ""),
-  file = file.path(dir, paste0("bc_ghg_emissions_", data_year_range[1], "-", data_year_range[2], "_metadata.txt")),
+  file = file.path(dir, paste0("bc_ghg_emissions_by_gas", data_year_range[1], "-", data_year_range[2], "_metadata.txt")),
   sep = "\n",
   append = TRUE
 )

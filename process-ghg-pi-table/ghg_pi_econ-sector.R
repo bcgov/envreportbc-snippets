@@ -23,7 +23,7 @@ library(readr)
 
 ## Import the .xlsx table from data/
 dir <- "process-ghg-pi-table/data"
-filename <- 'provincial_inventory_of_greenhouse_gas_emissions_1990-2021.xlsx'
+filename <- 'provincial_inventory_of_greenhouse_gas_emissions_1990-2021_edited.xlsx'
 
 ## Get the metadata from the sheet
 units <- readxl::read_xlsx(file.path(getwd(),dir, filename),
