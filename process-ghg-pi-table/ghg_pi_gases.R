@@ -91,13 +91,14 @@ data_wide <- read_xlsx(file.path(dir, filename),
     subsector_level2 = ifelse(!is.na(subsector_level1), NA_character_, subsector_level2),
     subsector_level1 = ifelse(subsector_level1 == "OTHER LAND USE", "Other Emissions Not Included In Inventory Total", subsector_level1)
   ) %>%
-  fill(sector, subsector_level1) %>%
+  fill(sector, subsector_level1, subsector_level2) %>%
   filter(sector != "total" & subsector_level1 != "total") %>%
-  group_by(sector, subsector_level1) %>%
+  group_by(gas, sector, subsector_level1, subsector_level2) %>%
   mutate(n = n()) %>%
   ungroup() %>%
-  filter(n == 1 | (!is.na(subsector_level2) & n > 1)) %>%
-  select(gas, sector, subsector_level1, subsector_level2, subsector_level3, `1990`:`2021`)
+  filter(n == 1 | (!is.na(subsector_level3) & n > 1)) %>%
+  filter(!is.na(subsector_level2)) %>%
+  select(gas,sector, subsector_level1, subsector_level2, subsector_level3, `1990`:`2021`)
 
 ## Testing to make sure sums are same as input table
 data_long <- data_wide %>%
