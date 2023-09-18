@@ -104,7 +104,7 @@ data_wide <- read_xlsx(file.path(dir, filename),
 data_long <- data_wide %>%
   gather(key =  year, value = ktCO2e, -gas,
          -sector, -subsector_level1,
-         -subsector_level2) %>%
+         -subsector_level2, -subsector_level3) %>%
   mutate(ktCO2e = as.numeric(ktCO2e),
          year = as.integer(as.character(year)))
 
