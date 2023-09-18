@@ -97,7 +97,7 @@ data_wide <- read_xlsx(file.path(dir, filename),
   mutate(n = n()) %>%
   ungroup() %>%
   filter(n == 1 | (!is.na(subsector_level2) & n > 1)) %>%
-  select(gas, sector, subsector_level1, subsector_level2, `1990`:`2021`)
+  select(gas, sector, subsector_level1, subsector_level2, subsector_level3, `1990`:`2021`)
 
 ## Testing to make sure sums are same as input table
 data_long <- data_wide %>%
@@ -124,12 +124,12 @@ sector_totals
 
 ## Save the re-formatted data as CSV file
 data_year_range <- range(data_long$year)
-fname <- paste0("bc_ghg_emissions_by_economic_sector_by_gas", data_year_range[1], "-", data_year_range[2], ".csv")
+fname <- paste0("bc_ghg_emissions_by_economic_sector_by_gas_", data_year_range[1], "-", data_year_range[2], ".csv")
 write_csv(data_wide, (file.path(dir, fname)))
 cat(
   paste0("\n## GHGs by Economic Sector (", fname, ")\n"),
   replace_na(metadata$Notes, ""),
-  file = file.path(dir, paste0("bc_ghg_emissions_by_gas", data_year_range[1], "-", data_year_range[2], "_metadata.txt")),
+  file = file.path(dir, paste0("bc_ghg_emissions_by_gas_", data_year_range[1], "-", data_year_range[2], "_metadata.txt")),
   sep = "\n",
   append = TRUE
 )
