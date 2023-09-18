@@ -61,7 +61,7 @@ sector_cell_formats <- xlsx_cells(file.path(dir, filename),
          bold = map_lgl(local_format_id, ~ formats$local$font$bold[[.x]]),
          indent = map_int(local_format_id, ~ formats$local$alignment$indent[[.x]]),
          sector_level = case_when(
-           is.na(text_colour) & bg_colour == "FFFFFFFF" & bold & indent == 0 ~ "sector",
+           is.na(text_colour) & bg_colour == "FFFFFFFF"|bg_colour == "FF000000" & bold & indent == 0 ~ "sector",
            text_colour == "FF00783C" & bold & indent == 0 ~ "subsector_level1",
            !bold & indent == 1 ~ "subsector_level2",
            text_colour == "FFFFFFFF" & !bold & indent == 3 ~ "subsector_level3",
