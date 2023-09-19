@@ -70,6 +70,8 @@ data_wide <- read_xlsx(file.path(dir, filename),
                        range = "Gases!B5:AI522",
                        na = c("", "-")) %>%
   mutate(row = seq(5, length.out = nrow(.))) %>%
+  mutate(across(everything(), \(x) replace(x, x == 'x', NA))) %>%
+  mutate(across(contains('20'), as.numeric)) %>%
   bind_rows(
    read_xlsx(file.path(dir, filename),
               col_names = newcols,
@@ -88,17 +90,17 @@ data_wide <- read_xlsx(file.path(dir, filename),
   pivot_wider(names_from = sector_level, values_from = all_sectors) %>%
   mutate(
     subsector_level1 = ifelse(!is.na(sector), "total", subsector_level1),
-    subsector_level2 = ifelse(!is.na(subsector_level1), NA_character_, subsector_level2),
-    subsector_level1 = ifelse(subsector_level1 == "OTHER LAND USE", "Other Emissions Not Included In Inventory Total", subsector_level1)
+    subsector_level2 = ifelse(!is.na(subsector_level1), "total", subsector_level2),
+    subsector_level3 = ifelse(!is.na(subsector_level2), NA_character_, subsector_level3),
+    sector = ifelse(subsector_level1 == "OTHER LAND USE", "Other Emissions Not Included In Inventory Total", sector)
   ) %>%
   fill(sector, subsector_level1, subsector_level2) %>%
-  filter(sector != "total" & subsector_level1 != "total") %>%
+  filter(sector != "total" & subsector_level1 != "total" & subsector_level2 != "total") %>%
   group_by(gas, sector, subsector_level1, subsector_level2) %>%
   mutate(n = n()) %>%
   ungroup() %>%
   filter(n == 1 | (!is.na(subsector_level3) & n > 1)) %>%
-  filter(!is.na(subsector_level2)) %>%
-  select(gas,sector, subsector_level1, subsector_level2, subsector_level3, `1990`:`2021`)
+  select(gas, sector, subsector_level1, subsector_level2, subsector_level3, `1990`:`2021`)
 
 ## Testing to make sure sums are same as input table
 data_long <- data_wide %>%
@@ -106,7 +108,8 @@ data_long <- data_wide %>%
          -sector, -subsector_level1,
          -subsector_level2, -subsector_level3) %>%
   mutate(ktCO2e = as.numeric(ktCO2e),
-         year = as.integer(as.character(year)))
+         year = as.integer(as.character(year))) %>%
+  arrange(year, gas)
 
 totals <- data_long %>%
   filter(subsector_level1 != "Other Emissions Not Included In Inventory Total") %>%
