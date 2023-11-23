@@ -93,12 +93,12 @@ data_wide <- read_xlsx(file.path(dir, filename),
       select(row, all_sectors, sector_level),
     by = c("row", "all_sectors")
   ) %>%
+  filter(!(sector_level == "subsector_level3")) %>%
   mutate(all_sectors =  gsub("[0-9]$", "", all_sectors)) %>%
   pivot_wider(names_from = sector_level, values_from = all_sectors) %>%
   mutate(
     subsector_level1 = ifelse(!is.na(sector), "total", subsector_level1),
     subsector_level2 = ifelse(!is.na(subsector_level1), "total", subsector_level2),
-    subsector_level3 = ifelse(!is.na(subsector_level2), NA_character_, subsector_level3),
     sector = ifelse(subsector_level1 == "OTHER LAND USE", "Other Emissions Not Included In Inventory Total", sector)
   ) %>%
   fill(sector, subsector_level1, subsector_level2) %>%
@@ -106,14 +106,14 @@ data_wide <- read_xlsx(file.path(dir, filename),
   group_by(sector, subsector_level1, subsector_level2) %>%
   mutate(n = n()) %>%
   ungroup() %>%
-  filter(n == 1 | (!is.na(subsector_level3) & n > 1)) %>%
-  select(sector, subsector_level1, subsector_level2, subsector_level3, `1990`:`2021`)
+  filter(n == 1 | n > 1) %>%
+  select(sector, subsector_level1, subsector_level2, `1990`:`2021`)
 
 ## Testing to make sure sums are same as input table
 data_long <- data_wide %>%
   gather(key =  year, value = ktCO2e,
          -sector, -subsector_level1,
-         -subsector_level2, -subsector_level3) %>%
+         -subsector_level2) %>%
   mutate(ktCO2e = as.numeric(ktCO2e),
          year = as.integer(as.character(year)))
 
