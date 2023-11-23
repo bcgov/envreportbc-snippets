@@ -92,7 +92,7 @@ data_wide <- read_xlsx(file.path(dir, filename),
   mutate(
     subsector_level1 = ifelse(!is.na(sector), "total", subsector_level1),
     subsector_level2 = ifelse(!is.na(subsector_level1), "total", subsector_level2),
-    sector = ifelse(subsector_level1 == "OTHER LAND USE", "Other Emissions Not Included In Inventory Total", sector)
+    sector = ifelse(subsector_level1 == "LAND USE", "Other Emissions Not Included In Inventory Total", sector)
   ) %>%
   fill(sector, subsector_level1, subsector_level2) %>%
   filter(sector != "total" & subsector_level1 != "total" & subsector_level2 != "total") %>%
